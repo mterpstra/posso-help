@@ -13,28 +13,47 @@
     </div>
 
     <div class="page-container">
-      <form id="register-form" 
-        action="/api/v1/web/fn-cf616548-9087-4219-a8d4-07173ff27fb0/possohelp/api/auth/register" 
-        method="post">
-        <div class="login-container">
-          <input name="username" id="username-input" 
-                 type="text" placeholder="Username"/>
-          <input name="email" id="email-input" 
-                 type="text" placeholder="Email"/>
-          <input name="phonenumber" id="phone-input" 
-                 type="tel" placeholder="WhatsApp (opcional): +5511999999999"/>
-          <input name="password" id="password-input" 
-                 type="password" placeholder="Password"/>
-          <input id="confirm-input" type="password" 
-                 placeholder="Confirm Password"/>
-          <button id="register-button" type="submit">Register</button>
-          <div id="error-message" class="error-message">Error</div>
-          <div id="success-message" class="success-message">Success</div>
-          <a href="login.html">Login</a>
-        </div>
-      </form>
-    </div>
 
+      <!-- Registration Section -->
+      <div id="registration-section">
+        <form id="register-form" 
+          action="/api/auth/register" 
+          method="post">
+          <div class="login-container">
+            <input name="username" id="username-input" 
+                   type="text" placeholder="Username"/>
+            <input name="email" id="email-input" 
+                   type="text" placeholder="Email"/>
+            <input name="phonenumber" id="phone-input" 
+                   type="tel" placeholder="WhatsApp (opcional): +5511999999999"/>
+            <input name="password" id="password-input" 
+                   type="password" placeholder="Password"/>
+            <input id="confirm-input" type="password" 
+                   placeholder="Confirm Password"/>
+            <button id="register-button" type="submit">Register</button>
+            <div id="error-message" class="error-message">Error</div>
+            <div id="success-message" class="success-message">Success</div>
+            <a href="login.html">Login</a>
+          </div>
+        </form>
+      </div>
+
+      <!-- Email Verification Section -->
+      <div id="verification-section" class="verification-section">
+        <form id="verification-form">
+          <div class="login-container">
+            <h2>Verificar Email</h2>
+            <p><strong id="verification-email"></strong></p>
+            <input id="verification-code" type="text"
+                   placeholder="Code required" maxlength="6"/>
+            <button type="submit">Submit</button>
+            <div id="verification-error" class="error-message">Error</div>
+            <a href="login.html">Login</a>
+          </div>
+        </form>
+      </div>
+
+    </div>
   </body>
 </html>
    

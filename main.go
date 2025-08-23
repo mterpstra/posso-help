@@ -34,6 +34,10 @@ func main() {
 	// Apply the logging middleware to all routes
 	r.Use(LoggingMiddleware)
 
+	r.HandleFunc("/api/auth/register", HandleAuthRegister)
+	r.HandleFunc("/api/auth/verify-email", HandleEmailVerification)
+	r.HandleFunc("/api/auth/login", HandleLogin)
+
   // Serve static files from the "static" directory
   staticFileDirectory := http.Dir("./static/")
   fileServer := http.FileServer(staticFileDirectory)

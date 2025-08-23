@@ -5,8 +5,6 @@ class ZapmanejoAuth {
   constructor() {
     this.token = localStorage.getItem('zapmanejo_token');
     this.user = JSON.parse(localStorage.getItem('zapmanejo_user') || 'null');
-    this.baseURL = 'https://faas-nyc1-2ef2e6cc.doserverless.co';
-    this.authPath = '/api/v1/web/fn-cf616548-9087-4219-a8d4-07173ff27fb0/possohelp/api/auth';
   }
 
   // Set authentication token
@@ -44,15 +42,15 @@ class ZapmanejoAuth {
   // Register new user
   async register(username, email, password, phoneNumber = '') {
     try {
-      const response = await fetch(`${this.baseURL}${this.authPath}/register`, {
+      const response = await fetch(`/api/auth/register`, {
         method: 'POST',
         headers: this.getAuthHeaders(),
-        body: JSON.stringify({"body": {
+        body: JSON.stringify({
           username,
           email,
           password,
           phone_number: phoneNumber
-        }})
+        })
       });
 
       const data = await response.json();
@@ -65,8 +63,9 @@ class ZapmanejoAuth {
 
   // Login user
   async login(email, password) {
+    console.log("login()");
     try {
-      const response = await fetch(`${this.baseURL}${this.authPath}/login`, {
+      const response = await fetch(`/api/auth/login`, {
         method: 'POST',
         headers: this.getAuthHeaders(),
         body: JSON.stringify({ email, password })
@@ -88,7 +87,7 @@ class ZapmanejoAuth {
   // Verify email with code
   async verifyEmail(email, code) {
     try {
-      const response = await fetch(`${this.baseURL}${this.authPath}/verify-email`, {
+      const response = await fetch(`/api/auth/verify-email`, {
         method: 'POST',
         headers: this.getAuthHeaders(),
         body: JSON.stringify({ email, code })
@@ -110,7 +109,7 @@ class ZapmanejoAuth {
   // Link phone number to account
   async linkPhoneNumber(phoneNumber) {
     try {
-      const response = await fetch(`${this.baseURL}${this.authPath}/link-phone`, {
+      const response = await fetch(`/api/auth/link-phone`, {
         method: 'POST',
         headers: this.getAuthHeaders(),
         body: JSON.stringify({ phone_number: phoneNumber })
@@ -126,7 +125,7 @@ class ZapmanejoAuth {
   // Get user profile
   async getUserProfile() {
     try {
-      const response = await fetch(`${this.baseURL}/api/user/profile`, {
+      const response = await fetch(`/api/user/profile`, {
         headers: this.getAuthHeaders()
       });
 
@@ -235,7 +234,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const result = await auth.login(email, password);
         
         if (result.success) {
-          window.location.href = '/index.html';
+          window.location.href = '/static/index.html';
         } else {
           errorElement.textContent = result.message;
           errorElement.style.display = 'block';
@@ -266,7 +265,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const result = await auth.verifyEmail(email, code);
         
         if (result.success) {
-          window.location.href = '/index.html';
+          window.location.href = '/static/index.html';
         } else {
           errorElement.textContent = result.message;
           errorElement.style.display = 'block';
