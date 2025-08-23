@@ -387,7 +387,7 @@ function showPhoneLinkingPrompt() {
 
 // Enhanced Get function that includes authentication
 function GetAuthenticated(action, category, phone_number, callback) {
-  let url = `/${BASE_PATH}/data/${action}/${category}/${phone_number}`;
+  let url = `/api/data/${action}/${category}/${phone_number}`;
   url = url.replace(/\/\//g, "/");
 
   fetch(url, {
@@ -413,6 +413,7 @@ function GetAuthenticated(action, category, phone_number, callback) {
 
 // Override the existing Find function to use authentication
 function Find(phone_number) {
+  console.log("New Find() Function");
   if (!auth.isAuthenticated()) {
     window.location.href = '/login.html';
     return;
@@ -427,14 +428,15 @@ function Find(phone_number) {
 
 // Update download links to use authentication
 function updateDownloadLinksWithAuth(phone_number) {
+  console.log("updateDownloadLinksWithAuth");
   const authParams = `?token=${encodeURIComponent(auth.token)}`;
   
   document.getElementById("download-link-births").href = 
-    `${DOWNLOAD_BASE_PATH}/births/${phone_number}${authParams}`;
+    `/api/download/births/${phone_number}${authParams}`;
   document.getElementById("download-link-deaths").href = 
-    `${DOWNLOAD_BASE_PATH}/deaths/${phone_number}${authParams}`;
+    `/api/download/deaths/${phone_number}${authParams}`;
   document.getElementById("download-link-rain").href = 
-    `${DOWNLOAD_BASE_PATH}/rain/${phone_number}${authParams}`;
+    `/api/download/rain/${phone_number}${authParams}`;
   document.getElementById("download-link-temperature").href = 
-    `${DOWNLOAD_BASE_PATH}/temperature/${phone_number}${authParams}`;
+    `/api/download/temperature/${phone_number}${authParams}`;
 }

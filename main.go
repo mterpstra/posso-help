@@ -27,22 +27,37 @@ func LoggingMiddleware(next http.Handler) http.Handler {
 	})
 }
 
-
 func main() {
-	r := mux.NewRouter()
+  r := mux.NewRouter()
 
-	// Apply the logging middleware to all routes
-	r.Use(LoggingMiddleware)
+  // Apply the logging middleware to all routes
+  r.Use(LoggingMiddleware)
 
-	r.HandleFunc("/api/auth/register", HandleAuthRegister)
-	r.HandleFunc("/api/auth/verify-email", HandleEmailVerification)
-	r.HandleFunc("/api/auth/login", HandleLogin)
+
+  // Non-Auth register/login routes
+  r.HandleFunc("/api/auth/register", HandleAuthRegister)
+  r.HandleFunc("/api/auth/verify-email", HandleEmailVerification)
+  r.HandleFunc("/api/auth/login", HandleLogin)
+
+
+  // Data routes
+  dataRouter := r.PathPrefix("/api/data").Subrouter()
+	dataRouter.Use(AuthMiddleware) 
+	dataRouter.HandleFunc("/{datatype}/{phonenumber}", HandleData).Methods("GET")
+
+  // Download routes
+  downloadRouter := r.PathPrefix("/api/download").Subrouter()
+	downloadRouter.Use(AuthMiddleware) 
+	downloadRouter.HandleFunc("/{datatype}/{phonenumber}", HandleDownload).Methods("GET")
+
 
   // Serve static files from the "static" directory
   staticFileDirectory := http.Dir("./static/")
   fileServer := http.FileServer(staticFileDirectory)
   r.PathPrefix("/static/").Handler(http.StripPrefix("/static/", fileServer))
 
+
+  // Old Stuff
 	r.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, "Hello! you've requested %s\n", r.URL.Path)
 	})

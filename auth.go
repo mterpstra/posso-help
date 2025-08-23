@@ -7,6 +7,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"errors"
+	"log"
 	"fmt"
 	"net/http"
 	"os"
@@ -18,6 +19,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 
   "posso-help/internal/email"
+  "posso-help/internal/password"
 )
 
 // Updated User struct to include additional fields
@@ -30,7 +32,7 @@ type User struct {
 	Name        string             `json:"name"`
 	CreatedAt   time.Time          `json:"created_at"`
 	UpdatedAt   time.Time          `json:"updated_at"`
-  IsActive    bool               `bson:"is_active",json:"is_active"`
+  IsActive    bool               `bson:"is_active" json:"is_active"`
 }
 
 // JWT Claims structure
@@ -119,6 +121,8 @@ func validateJWTToken(tokenString string) (*Claims, error) {
 	if claims, ok := token.Claims.(*Claims); ok && token.Valid {
 		return claims, nil
 	}
+
+  // @todo: Consider storing the token in the DB and validating it here.
 
 	return nil, errors.New("invalid token")
 }
@@ -219,8 +223,7 @@ func HandleAuthRegister(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Hash password using Mark's existing system
-	hashedPassword, err := GetSalted(req.Password)
+	hashedPassword, err := password.GetSalted(req.Password)
 	if err != nil {
 		response := AuthResponse{Success: false, Message: "Error processing password"}
 		json.NewEncoder(w).Encode(response)
@@ -258,7 +261,7 @@ func HandleAuthRegister(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Send verification email using Mark's existing email system
-	err = SendRegistrationEmail(req.Email, verificationCode)
+	err = email.SendRegistrationEmail(req.Email, verificationCode)
 	if err != nil {
 		response := AuthResponse{Success: false, Message: "Error sending verification email"}
 		json.NewEncoder(w).Encode(response)
@@ -288,8 +291,7 @@ func HandleLogin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Hash password for comparison
-	hashedPassword, err := GetSalted(req.Password)
+	hashedPassword, err := password.GetSalted(req.Password)
 	if err != nil {
 		response := AuthResponse{Success: false, Message: "Authentication failed"}
 		json.NewEncoder(w).Encode(response)
@@ -432,10 +434,18 @@ func HandleLinkPhoneNumber(w http.ResponseWriter, r *http.Request) {
 }
 
 // Authentication middleware
-func AuthMiddleware(next http.HandlerFunc) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
+func AuthMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+    log.Printf("AuthMiddleware started")
 		authHeader := r.Header.Get("Authorization")
+
 		if authHeader == "" {
+      authHeader = r.URL.Query().Get("token")
+      log.Printf("auth header from query")
+    }
+
+		if authHeader == "" {
+      log.Printf("Missing Authorization Header")
 			http.Error(w, "Authorization header required", http.StatusUnauthorized)
 			return
 		}
@@ -443,6 +453,7 @@ func AuthMiddleware(next http.HandlerFunc) http.HandlerFunc {
 		tokenString := strings.Replace(authHeader, "Bearer ", "", 1)
 		claims, err := validateJWTToken(tokenString)
 		if err != nil {
+      log.Printf("Token is Invalid")
 			http.Error(w, "Invalid authentication token", http.StatusUnauthorized)
 			return
 		}
@@ -452,8 +463,9 @@ func AuthMiddleware(next http.HandlerFunc) http.HandlerFunc {
 		ctx = context.WithValue(ctx, "user_email", claims.Email)
 		ctx = context.WithValue(ctx, "phone_number", claims.PhoneNumber)
 		
+    log.Printf("AuthMiddleware ended")
 		next.ServeHTTP(w, r.WithContext(ctx))
-	}
+	})
 }
 
 // Auto-register from WhatsApp message
@@ -476,7 +488,7 @@ func AutoRegisterFromWhatsApp(phoneNumber, name string) (*User, error) {
 	rand.Read(randomBytes)
 	randomPassword := hex.EncodeToString(randomBytes)
 	
-	hashedPassword, err := GetSalted(randomPassword)
+	hashedPassword, err := password.GetSalted(randomPassword)
 	if err != nil {
 		return nil, err
 	}
@@ -500,19 +512,4 @@ func AutoRegisterFromWhatsApp(phoneNumber, name string) (*User, error) {
 
 	user.ID = result.InsertedID.(primitive.ObjectID)
 	return &user, nil
-}
-
-
-// Password validation function (integrates with Mark's existing password.go)
-func GetSalted(password string) (string, error) {
-	// This should call Mark's existing GetSalted function from password.go
-	// Placeholder - replace with actual import/call to Mark's password package
-	return fmt.Sprintf("hashed_%s", password), nil
-}
-
-// Email sending function (integrates with Mark's existing email.go)
-func SendRegistrationEmail(to, code string) error {
-	fmt.Printf("Sending email to %s with code %s\n", to, code)
-  email.SendRegistrationEmail(to, code)
-	return nil
 }

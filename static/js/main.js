@@ -1,6 +1,6 @@
-const HOST = "https://faas-nyc1-2ef2e6cc.doserverless.co";
-const BASE_PATH = "api/v1/web/fn-cf616548-9087-4219-a8d4-07173ff27fb0/possohelp/api";
-const DOWNLOAD_BASE_PATH = `${HOST}/${BASE_PATH}/data/download`;
+//const HOST = "https://faas-nyc1-2ef2e6cc.doserverless.co";
+//const BASE_PATH = "api/v1/web/fn-cf616548-9087-4219-a8d4-07173ff27fb0/possohelp/api";
+//const DOWNLOAD_BASE_PATH = `${HOST}/${BASE_PATH}/data/download`;
 
 document.addEventListener('DOMContentLoaded', function() {
 
@@ -14,15 +14,11 @@ document.addEventListener('DOMContentLoaded', function() {
   const dl_rain        = document.getElementById("download-link-rain");
   const dl_temperature = document.getElementById("download-link-temperature");
 
-
   input.addEventListener('keyup', function(event) {
     if (event.key === 'Enter') {
       Find(input.value);
     }
-    dl_births.href      = `${DOWNLOAD_BASE_PATH}/births/${input.value}`;
-    dl_deaths.href      = `${DOWNLOAD_BASE_PATH}/deaths/${input.value}`;
-    dl_rain.href        = `${DOWNLOAD_BASE_PATH}/rain/${input.value}`;
-    dl_temperature.href = `${DOWNLOAD_BASE_PATH}/temperature/${input.value}`;
+    updateDownloadLinksWithAuth(input.value);
   });
 
   find_button.addEventListener('click', function() {
@@ -36,19 +32,12 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 function toggleDisplay(element) {
-  if (element.style.display === "none") {
-    // Or "flex", "grid", etc. depending on your layout
+  const display=element.style.display;
+  if (display === "none" || display === "") {
     element.style.display = "block"; 
   } else {
     element.style.display = "none";
   }
-}
-
-function Find(phone_number) {
-  Get("", "rain",        phone_number, ChartRain);
-  Get("", "temperature", phone_number, ChartTemperature);
-  Get("", "births",      phone_number, ChartBirths);
-  Get("", "deaths",      phone_number, ChartDeaths);
 }
 
 function GetValuesByMonth(rawData, field) {

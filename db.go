@@ -52,40 +52,32 @@ func dbGetCollection(collection string) *mongo.Collection {
 }
 
 func dbReadOrdered(collection, phone string) ([]bson.D, error) {
-
-  dataset := dbConn.Database(DATABASE_NAME).Collection(collection)
-
+  dataset := dbGetCollection(collection)
   filter := bson.M{"phone": phone}
   cursor, err := dataset.Find(context.Background(), filter)
   if err != nil {
     log.Fatal(err)
   }
   defer cursor.Close(context.Background())
-
   results := []bson.D{}
   if err = cursor.All(context.Background(), &results); err != nil {
     log.Fatal(err)
   }
-
   return results, nil
 }
 
 // No Order
 func dbReadUnordered(collection, phone string) ([]bson.M, error) {
-
-  dataset := dbConn.Database(DATABASE_NAME).Collection(collection)
-
+  dataset := dbGetCollection(collection)
   filter := bson.M{"phone": phone}
   cursor, err := dataset.Find(context.Background(), filter)
   if err != nil {
     log.Fatal(err)
   }
   defer cursor.Close(context.Background())
-
   results := []bson.M{}
   if err = cursor.All(context.Background(), &results); err != nil {
     log.Fatal(err)
   }
-
   return results, nil
 }

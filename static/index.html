@@ -7,6 +7,7 @@
     <script src="js/rain.js"></script>
     <script src="js/get_data.js"></script>
     <script src="js/main.js"></script>
+    <script src="js/auth.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
   </head>
@@ -27,7 +28,9 @@
       <div class="phone-number-container">
         <input id="phone-number-input" placeholder="Phone Number"/>
         <button id="find-button" type="button">Find</button>
-        <button id="download-button" class="btn"><i class="fa fa-download"></i></button>
+        <button id="download-button" class="btn">
+          <i class="fa fa-download"></i>
+        </button>
         <div id="download-links">
           <a href="#" id="download-link-births"      download>Births</a>
           <a href="#" id="download-link-deaths"      download>Deaths</a>
@@ -36,7 +39,6 @@
         </div>
       </div>
     </div>
-
 
     <div class="reports-container">
       <div class="birth-report">

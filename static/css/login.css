@@ -23,9 +23,13 @@
   border-radius:5px;
 }
 
-#error-message {
+.error-message {
   display:none;
   color:red;
+}
+
+.success-message {
+  display:none;
 }
 
 .verification-section {
