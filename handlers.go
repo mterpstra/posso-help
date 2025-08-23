@@ -1,5 +1,6 @@
 package main
 import (
+  "io"
   "log"
   "fmt"
   "net/http"
@@ -62,4 +63,29 @@ func HandleData(w http.ResponseWriter, r *http.Request) {
   }
   fmt.Fprint(w, string(json))
   return 
+}
+
+func HandleChatMessage(w http.ResponseWriter, r *http.Request) {
+
+  	defer r.Body.Close() // Ensure the body is closed
+
+	// Read the entire request body
+	bodyBytes, err := io.ReadAll(r.Body)
+	if err != nil {
+		http.Error(w, "Error reading request body", http.StatusInternalServerError)
+		return
+	}
+
+	// Unmarshal JSON into a struct
+  /*
+	var data MyData
+	err = json.Unmarshal(bodyBytes, &data)
+	if err != nil {
+		http.Error(w, "Error unmarshaling JSON", http.StatusBadRequest)
+		return
+	}
+  */
+
+	log.Printf("Received: %s\n", string(bodyBytes))
+
 }

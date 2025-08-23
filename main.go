@@ -35,9 +35,13 @@ func main() {
 
 
   // Non-Auth register/login routes
-  r.HandleFunc("/api/auth/register", HandleAuthRegister)
+  r.HandleFunc("/api/auth/register", HandleAuthRegister).Methods("POST")
   r.HandleFunc("/api/auth/verify-email", HandleEmailVerification)
   r.HandleFunc("/api/auth/login", HandleLogin)
+
+
+  // Text Message Handler
+  r.HandleFunc("/chat/message", HandleChatMessage).Methods("POST")
 
 
   // Data routes

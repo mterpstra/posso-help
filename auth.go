@@ -20,20 +20,8 @@ import (
 
   "posso-help/internal/email"
   "posso-help/internal/password"
+  "posso-help/internal/user"
 )
-
-// Updated User struct to include additional fields
-type User struct {
-	ID          primitive.ObjectID `bson:"_id,omitempty" json:"id"`
-	Username    string             `json:"username"`
-	Email       string             `json:"email"`
-	Password    string             `json:"-"` // Excluded from JSON responses
-	PhoneNumber string             `json:"phone_number"`
-	Name        string             `json:"name"`
-	CreatedAt   time.Time          `json:"created_at"`
-	UpdatedAt   time.Time          `json:"updated_at"`
-  IsActive    bool               `bson:"is_active" json:"is_active"`
-}
 
 // JWT Claims structure
 type Claims struct {
@@ -63,7 +51,7 @@ type AuthResponse struct {
 	Success      bool   `json:"success"`
 	Message      string `json:"message"`
 	Token        string `json:"token,omitempty"`
-	User         *User  `json:"user,omitempty"`
+	User    *user.User  `json:"user,omitempty"`
 	VerificationCode string `json:"verification_code,omitempty"`
 }
 
@@ -89,7 +77,7 @@ func generateVerificationCode() string {
 }
 
 // Generate JWT token
-func generateJWTToken(user *User) (string, error) {
+func generateJWTToken(user *user.User) (string, error) {
 	expirationTime := time.Now().Add(24 * time.Hour)
 	
 	claims := &Claims{
@@ -150,7 +138,7 @@ func storeVerificationCode(userID primitive.ObjectID, email string) (string, err
 }
 
 // Verify email code
-func verifyEmailCode(email, code string) (*User, error) {
+func verifyEmailCode(email, code string) (*user.User, error) {
 	collection := dbGetCollection("email_verifications")
 	
 	var verification EmailVerification
@@ -176,7 +164,7 @@ func verifyEmailCode(email, code string) (*User, error) {
 	userCollection.UpdateOne(context.TODO(), bson.M{"_id": verification.UserID}, userUpdate)
 
 	// Return updated user
-	var user User
+	var user user.User
 	err = userCollection.FindOne(context.TODO(), bson.M{"_id": verification.UserID}).Decode(&user)
 	return &user, err
 }
@@ -191,11 +179,6 @@ func linkPhoneNumber(userID primitive.ObjectID, phoneNumber string) error {
 
 // Register new user handler
 func HandleAuthRegister(w http.ResponseWriter, r *http.Request) {
-	if r.Method != "POST" {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		return
-	}
-
 	var req RegisterRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
     response := AuthResponse{Success: false, Message: err.Error()}
@@ -210,12 +193,10 @@ func HandleAuthRegister(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-  dbConnect() 
-  defer dbDisconnect()
 	collection := dbGetCollection("users")
 
 	// Check if user already exists
-	var existingUser User
+	var existingUser user.User
   err := collection.FindOne(context.TODO(), bson.M{"email": req.Email}).Decode(&existingUser)
 	if err == nil {
 		response := AuthResponse{Success: false, Message: "User with this email already exists"}
@@ -231,7 +212,7 @@ func HandleAuthRegister(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Create new user
-	user := User{
+	user := user.User{
 		Username:    req.Username,
 		Email:       req.Email,
 		Password:    hashedPassword,
@@ -300,7 +281,7 @@ func HandleLogin(w http.ResponseWriter, r *http.Request) {
 
 	// Find user with email and password
 	collection := dbGetCollection("users")
-	var user User
+	var user user.User
 	filter := bson.M{
 		"email":    req.Email,
 		"password": hashedPassword,
@@ -469,11 +450,11 @@ func AuthMiddleware(next http.Handler) http.Handler {
 }
 
 // Auto-register from WhatsApp message
-func AutoRegisterFromWhatsApp(phoneNumber, name string) (*User, error) {
+func AutoRegisterFromWhatsApp(phoneNumber, name string) (*user.User, error) {
 	collection := dbGetCollection("users")
 	
 	// Check if user already exists with this phone number
-	var existingUser User
+	var existingUser user.User
 	err := collection.FindOne(context.TODO(), bson.M{"phone_number": phoneNumber}).Decode(&existingUser)
 	if err == nil {
 		return &existingUser, nil // User already exists
@@ -494,7 +475,7 @@ func AutoRegisterFromWhatsApp(phoneNumber, name string) (*User, error) {
 	}
 
 	// Create new WhatsApp user (auto-activated)
-	user := User{
+	user := user.User{
 		Username:    username,
 		Email:       email,
 		Password:    hashedPassword,
