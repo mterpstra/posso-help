@@ -1,0 +1,40 @@
+<html>
+  <head>
+    <link href="css/main.css" rel="stylesheet" />
+    <link href="css/login.css" rel="stylesheet" />
+    <script src="js/auth.js"></script>
+  </head>
+  <body>
+
+    <div class="header">
+      <div class="posso-help">
+        <h1>Posso Help</h1>
+      </div>
+    </div>
+
+    <div class="page-container">
+      <form id="register-form" 
+        action="/api/v1/web/fn-cf616548-9087-4219-a8d4-07173ff27fb0/possohelp/api/auth/register" 
+        method="post">
+        <div class="login-container">
+          <input name="username" id="username-input" 
+                 type="text" placeholder="Username"/>
+          <input name="email" id="email-input" 
+                 type="text" placeholder="Email"/>
+          <input name="phonenumber" id="phone-input" 
+                 type="tel" placeholder="WhatsApp (opcional): +5511999999999"/>
+          <input name="password" id="password-input" 
+                 type="password" placeholder="Password"/>
+          <input id="confirm-input" type="password" 
+                 placeholder="Confirm Password"/>
+          <button id="register-button" type="submit">Register</button>
+          <div id="error-message" class="error-message">Error</div>
+          <div id="success-message" class="success-message">Success</div>
+          <a href="login.html">Login</a>
+        </div>
+      </form>
+    </div>
+
+  </body>
+</html>
+   
