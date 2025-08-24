@@ -40,6 +40,10 @@ func main() {
   r.HandleFunc("/api/auth/login", HandleLogin)
 
 
+  // Handle the webhook setup request
+  r.HandleFunc("/chat/message", HandleHubChallenge).Methods("GET").Queries("hub.mode", "{mode}").Queries("hub.verify_token", "{token}").Queries("hub.challenge", "{challenge}")
+
+
   // Text Message Handler
   r.HandleFunc("/chat/message", HandleChatMessage).Methods("POST")
 

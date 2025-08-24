@@ -1,5 +1,6 @@
 package main
 import (
+  "os"
   "io"
   "log"
   "fmt"
@@ -66,26 +67,37 @@ func HandleData(w http.ResponseWriter, r *http.Request) {
 }
 
 func HandleChatMessage(w http.ResponseWriter, r *http.Request) {
-
-  	defer r.Body.Close() // Ensure the body is closed
-
-	// Read the entire request body
+  log.Printf("HandleChatMessage")
+  defer r.Body.Close()
 	bodyBytes, err := io.ReadAll(r.Body)
 	if err != nil {
 		http.Error(w, "Error reading request body", http.StatusInternalServerError)
 		return
 	}
+	log.Printf("Received: %s\n", string(bodyBytes))
+}
 
-	// Unmarshal JSON into a struct
-  /*
-	var data MyData
-	err = json.Unmarshal(bodyBytes, &data)
-	if err != nil {
-		http.Error(w, "Error unmarshaling JSON", http.StatusBadRequest)
+func HandleHubChallenge(w http.ResponseWriter, r *http.Request) {
+  log.Printf("HandleHubChallenge")
+  osToken := os.Getenv("HUB_TOKEN")
+  mode := r.URL.Query().Get("hub.mode")
+  token := r.URL.Query().Get("hub.verify_token")
+  challenge := r.URL.Query().Get("hub.challenge")
+
+  if len(osToken) < 1 {
+    http.Error(w, "environment_error", http.StatusBadRequest)
+		return
+  }
+
+  if mode != "subscribe" {
+    http.Error(w, "invalid_mode", http.StatusBadRequest)
 		return
 	}
-  */
 
-	log.Printf("Received: %s\n", string(bodyBytes))
+  if token != osToken {
+    http.Error(w, "invalid_token", http.StatusBadRequest)
+		return
+	}
 
+  fmt.Fprint(w, challenge)
 }
