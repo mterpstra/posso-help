@@ -21,6 +21,7 @@ import (
   "posso-help/internal/email"
   "posso-help/internal/password"
   "posso-help/internal/user"
+  "posso-help/internal/db"
 )
 
 // JWT Claims structure
@@ -128,7 +129,7 @@ func storeVerificationCode(userID primitive.ObjectID, email string) (string, err
 		IsUsed:    false,
 	}
 
-	collection := dbGetCollection("email_verifications")
+	collection := db.GetCollection("email_verifications")
 	_, err := collection.InsertOne(context.TODO(), verification)
 	if err != nil {
 		return "", err
@@ -139,7 +140,7 @@ func storeVerificationCode(userID primitive.ObjectID, email string) (string, err
 
 // Verify email code
 func verifyEmailCode(email, code string) (*user.User, error) {
-	collection := dbGetCollection("email_verifications")
+	collection := db.GetCollection("email_verifications")
 	
 	var verification EmailVerification
 	filter := bson.M{
@@ -159,7 +160,7 @@ func verifyEmailCode(email, code string) (*user.User, error) {
 	collection.UpdateOne(context.TODO(), bson.M{"_id": verification.ID}, update)
 
 	// Activate user account
-	userCollection := dbGetCollection("users")
+	userCollection := db.GetCollection("users")
 	userUpdate := bson.M{"$set": bson.M{"is_active": true}}
 	userCollection.UpdateOne(context.TODO(), bson.M{"_id": verification.UserID}, userUpdate)
 
@@ -171,7 +172,7 @@ func verifyEmailCode(email, code string) (*user.User, error) {
 
 // Link WhatsApp phone number to user account
 func linkPhoneNumber(userID primitive.ObjectID, phoneNumber string) error {
-	collection := dbGetCollection("users")
+	collection := db.GetCollection("users")
 	update := bson.M{"$set": bson.M{"phone_number": phoneNumber}}
 	_, err := collection.UpdateOne(context.TODO(), bson.M{"_id": userID}, update)
 	return err
@@ -193,7 +194,7 @@ func HandleAuthRegister(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	collection := dbGetCollection("users")
+	collection := db.GetCollection("users")
 
 	// Check if user already exists
 	var existingUser user.User
@@ -280,7 +281,7 @@ func HandleLogin(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Find user with email and password
-	collection := dbGetCollection("users")
+	collection := db.GetCollection("users")
 	var user user.User
 	filter := bson.M{
 		"email":    req.Email,
@@ -451,7 +452,7 @@ func AuthMiddleware(next http.Handler) http.Handler {
 
 // Auto-register from WhatsApp message
 func AutoRegisterFromWhatsApp(phoneNumber, name string) (*user.User, error) {
-	collection := dbGetCollection("users")
+	collection := db.GetCollection("users")
 	
 	// Check if user already exists with this phone number
 	var existingUser user.User

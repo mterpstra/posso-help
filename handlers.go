@@ -7,7 +7,8 @@ import (
   "net/http"
   "encoding/json"
   "strconv"
-
+  "posso-help/internal/chat"
+  "posso-help/internal/db"
   "github.com/gorilla/mux"
 )
 
@@ -17,7 +18,7 @@ func HandleDownload(w http.ResponseWriter, r *http.Request) {
 	datatype := vars["datatype"]
 	phoneNumber := vars["phonenumber"]
 
-  data, err := dbReadOrdered(datatype, phoneNumber)
+  data, err := db.ReadOrdered(datatype, phoneNumber)
   if err != nil {
 		w.WriteHeader(http.StatusBadRequest) 
 		fmt.Fprintf(w, "%v", err)
@@ -49,7 +50,7 @@ func HandleData(w http.ResponseWriter, r *http.Request) {
 	datatype := vars["datatype"]
 	phoneNumber := vars["phonenumber"]
 
-  data, err := dbReadUnordered(datatype, phoneNumber)
+  data, err := db.ReadUnordered(datatype, phoneNumber)
   if err != nil {
 		w.WriteHeader(http.StatusBadRequest) 
 		fmt.Fprintf(w, "%v", err)
@@ -75,6 +76,21 @@ func HandleChatMessage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	log.Printf("Received: %s\n", string(bodyBytes))
+
+  chatMessage := &chat.ChatMessage{}
+	err = json.Unmarshal(bodyBytes, chatMessage)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+  err = chat.ProcessEntries(chatMessage.Entries)
+  if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+  }
+
+  log.Printf("Object: %s\n", chatMessage.Object)
 }
 
 func HandleHubChallenge(w http.ResponseWriter, r *http.Request) {

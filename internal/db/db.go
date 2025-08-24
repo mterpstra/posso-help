@@ -1,4 +1,4 @@
-package main
+package db
 
 import (
   "context"
@@ -12,11 +12,11 @@ import (
   "go.mongodb.org/mongo-driver/mongo/options"
 )
 
-var dbConn *mongo.Client
+var conn *mongo.Client
 const DATABASE_NAME="possohelp"
 
-func dbConnect() {
-  println("dbConnect()")
+func Connect() {
+  println("db.Connect()")
   uri := os.Getenv("DB_CONNECTION_STRING")
   if !strings.HasPrefix(uri, "mongodb") {
     log.Fatal("Invalid Connection String")
@@ -27,32 +27,32 @@ func dbConnect() {
   defer cancel()
 
   var err error
-  dbConn, err = mongo.Connect(ctx, clientOptions)
+  conn, err = mongo.Connect(ctx, clientOptions)
   if err != nil {
     log.Printf("Could not connect to DB: %v", err)
   }
 
-  err = dbConn.Ping(ctx, nil)
+  err = conn.Ping(ctx, nil)
   if err != nil {
     log.Fatalf("Could not ping DB: %v", err)
   }
 }
 
-func dbDisconnect() {
-  println("dbDisconnect()")
-  dbConn.Disconnect(context.TODO())
-  dbConn = nil
+func Disconnect() {
+  println("db.Disconnect()")
+  conn.Disconnect(context.TODO())
+  conn = nil
 }
 
-func dbGetCollection(collection string) *mongo.Collection {
-  if dbConn == nil {
-    dbConnect() 
+func GetCollection(collection string) *mongo.Collection {
+  if conn == nil {
+    Connect() 
   }
-	return dbConn.Database(DATABASE_NAME).Collection(collection)
+	return conn.Database(DATABASE_NAME).Collection(collection)
 }
 
-func dbReadOrdered(collection, phone string) ([]bson.D, error) {
-  dataset := dbGetCollection(collection)
+func ReadOrdered(collection, phone string) ([]bson.D, error) {
+  dataset := GetCollection(collection)
   filter := bson.M{"phone": phone}
   cursor, err := dataset.Find(context.Background(), filter)
   if err != nil {
@@ -67,8 +67,8 @@ func dbReadOrdered(collection, phone string) ([]bson.D, error) {
 }
 
 // No Order
-func dbReadUnordered(collection, phone string) ([]bson.M, error) {
-  dataset := dbGetCollection(collection)
+func ReadUnordered(collection, phone string) ([]bson.M, error) {
+  dataset := GetCollection(collection)
   filter := bson.M{"phone": phone}
   cursor, err := dataset.Find(context.Background(), filter)
   if err != nil {
