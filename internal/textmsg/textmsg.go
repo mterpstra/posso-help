@@ -1,6 +1,7 @@
 package textmsg
 
 import (
+	"io"
 	"bytes"
 	"encoding/json"
   "os"
@@ -83,6 +84,21 @@ func (ms *MessageSender) send(jsonPayload []byte) error {
     return err
 	}
 	defer resp.Body.Close()
+
+  // Check the HTTP status code
+	if resp.StatusCode != http.StatusOK {
+		log.Printf("Unexpected status code: %d", resp.StatusCode)
+	}
+
+	// Read the response body
+	bodyBytes, err := io.ReadAll(resp.Body)
+	if err != nil {
+		log.Printf("Error reading response body: %v", err)
+	}
+
+	// Convert the byte slice to a string
+	bodyString := string(bodyBytes)
+	log.Printf("Response Body: %v\n", bodyString)
 
   log.Printf("message sender send success: %v\n", err)
   return nil
