@@ -71,6 +71,7 @@ func (ms *MessageSender) validate() error {
 func (ms *MessageSender) send(jsonPayload []byte) error {
 	req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonPayload))
 	if err != nil {
+    log.Printf("message sender request error: %v\n", err)
     return err
 	}
 	req.Header.Set("Authorization", "Bearer " + authToken)
@@ -78,20 +79,25 @@ func (ms *MessageSender) send(jsonPayload []byte) error {
 	client := &http.Client{}
   resp, err := client.Do(req)
 	if err != nil {
+    log.Printf("message sender client do: %v\n", err)
     return err
 	}
 	defer resp.Body.Close()
 
+  log.Printf("message sender send success: %v\n", err)
   return nil
 }
 
 func (ms *MessageSender) Send() error {
+  log.Printf("message senderer sending message")
   payload, err := ms.getPayload()
   if err != nil {
+    log.Printf("message sender payload error: %v\n", err)
     return err
   }
   err = ms.validate()
   if err != nil {
+    log.Printf("message sender validation error: %v\n", err)
     return err
   }
   return ms.send(payload)

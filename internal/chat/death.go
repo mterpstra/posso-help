@@ -1,6 +1,7 @@
 package chat
 
 import (
+  "log"
   "fmt"
   "strings"
   "context"
@@ -77,6 +78,7 @@ func (d *DeathMessage) Text() string {
 
 func (d *DeathMessage) Insert(bmv *BaseMessageValues) error {
   deaths := db.GetCollection("deaths")
+  log.Printf("inserting death message to collection: %v\n", deaths)
   for _, death := range d.Entries {
     document := bmv.ToMap()
     document = append(document, bson.E{Key: "tag", Value: death.Id})
@@ -89,10 +91,15 @@ func (d *DeathMessage) Insert(bmv *BaseMessageValues) error {
       document = append(document, bson.E{Key: "date", Value: d.Date})
     }
 
-    _, err := deaths.InsertOne(context.TODO(), document)
+    result, err := deaths.InsertOne(context.TODO(), document)
     if err != nil {
+      log.Printf("error inserting death: %v\n", err)
       return err
     }
+
+    log.Printf("insert result: %v\n", result)
   }
+
+  log.Printf("death inserted successfully")
   return nil
 }

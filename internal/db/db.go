@@ -16,30 +16,30 @@ var conn *mongo.Client
 const DATABASE_NAME="possohelp"
 
 func Connect() {
-  println("db.Connect()")
+  log.Printf("connecting to database\n")
   uri := os.Getenv("DB_CONNECTION_STRING")
   if !strings.HasPrefix(uri, "mongodb") {
     log.Fatal("Invalid Connection String")
   }
   clientOptions := options.Client().ApplyURI(uri)
-
   ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
   defer cancel()
 
   var err error
   conn, err = mongo.Connect(ctx, clientOptions)
   if err != nil {
-    log.Printf("Could not connect to DB: %v", err)
+    log.Fatal("Could not connect to DB: %v", err)
   }
 
   err = conn.Ping(ctx, nil)
   if err != nil {
     log.Fatalf("Could not ping DB: %v", err)
   }
+  log.Printf("connected to database successfully\n")
 }
 
 func Disconnect() {
-  println("db.Disconnect()")
+  log.Printf("disconnecting from database\n")
   conn.Disconnect(context.TODO())
   conn = nil
 }
@@ -48,6 +48,7 @@ func GetCollection(collection string) *mongo.Collection {
   if conn == nil {
     Connect() 
   }
+  log.Printf("returning collection: %v\n", collection)
 	return conn.Database(DATABASE_NAME).Collection(collection)
 }
 
