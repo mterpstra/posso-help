@@ -73,24 +73,27 @@ func HandleChatMessage(w http.ResponseWriter, r *http.Request) {
 	bodyBytes, err := io.ReadAll(r.Body)
 	if err != nil {
 		http.Error(w, "Error reading request body", http.StatusInternalServerError)
+    log.Printf("could not read body: %v\n", err)
 		return
 	}
-	log.Printf("Received: %s\n", string(bodyBytes))
+	log.Printf("ChatMessage: %s\n", string(bodyBytes))
 
   chatMessage := &chat.ChatMessage{}
 	err = json.Unmarshal(bodyBytes, chatMessage)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
+    log.Printf("unmarshal error: %v\n", err)
 		return
 	}
 
   err = chat.ProcessEntries(chatMessage.Entries)
   if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
+    log.Printf("error processing entries: %v\n", err)
 		return
   }
 
-  log.Printf("Object: %s\n", chatMessage.Object)
+  log.Printf("success handing chat message")
 }
 
 func HandleHubChallenge(w http.ResponseWriter, r *http.Request) {

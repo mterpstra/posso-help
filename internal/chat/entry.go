@@ -104,11 +104,10 @@ func (e Entry) Process() error {
         Date         : t.Format(time.RFC3339),
       }
 
-
-      for _, parser := range parsers {
+      for name, parser := range parsers {
         if found := parser.Parse(message.Text.Body); found {
+          log.Printf("message parsed with parser: %v\n", name)
           if err := parser.Insert(baseMessageValues); err != nil {
-            // @todo: This seems to go nowhere...
             log.Printf("Error insert record into DB: %v\n", err)
           }
           text := textmsg.NewMessageSender(message.From, parser.Text())
