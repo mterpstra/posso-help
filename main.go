@@ -33,7 +33,6 @@ func main() {
   // Apply the logging middleware to all routes
   r.Use(LoggingMiddleware)
 
-
   // Non-Auth register/login routes
   r.HandleFunc("/api/auth/register", HandleAuthRegister).Methods("POST")
   r.HandleFunc("/api/auth/verify-email", HandleEmailVerification)
@@ -41,12 +40,14 @@ func main() {
 
 
   // Handle the webhook setup request
-  r.HandleFunc("/chat/message", HandleHubChallenge).Methods("GET").Queries("hub.mode", "{mode}").Queries("hub.verify_token", "{token}").Queries("hub.challenge", "{challenge}")
-
+  r.HandleFunc("/chat/message", HandleHubChallenge).
+    Methods("GET").
+    Queries("hub.mode", "{mode}").
+    Queries("hub.verify_token", "{token}").
+    Queries("hub.challenge", "{challenge}")
 
   // Text Message Handler
   r.HandleFunc("/chat/message", HandleChatMessage).Methods("POST")
-
 
   // Data routes
   dataRouter := r.PathPrefix("/api/data").Subrouter()
@@ -58,12 +59,10 @@ func main() {
 	downloadRouter.Use(AuthMiddleware) 
 	downloadRouter.HandleFunc("/{datatype}/{phonenumber}", HandleDownload).Methods("GET")
 
-
   // Serve static files from the "static" directory
   staticFileDirectory := http.Dir("./static/")
   fileServer := http.FileServer(staticFileDirectory)
   r.PathPrefix("/static/").Handler(http.StripPrefix("/static/", fileServer))
-
 
   // Old Stuff
 	r.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
