@@ -27,11 +27,23 @@ func LoggingMiddleware(next http.Handler) http.Handler {
 	})
 }
 
+// CorsMiddleware
+func CorsMiddleware(next http.Handler) http.Handler {
+  return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+    log.Printf("Setting Cors Header Global for Now")
+    w.Header().Set("Access-Control-Allow-Origin", "*")
+    next.ServeHTTP(w, r)
+  })
+}
+
 func main() {
   r := mux.NewRouter()
 
   // Apply the logging middleware to all routes
   r.Use(LoggingMiddleware)
+
+  // I don't think this is needed, but saving it in case.
+  //r.Use(CorsMiddleware)
 
   // Non-Auth register/login routes
   r.HandleFunc("/api/auth/register", HandleAuthRegister).Methods("POST")
@@ -52,7 +64,7 @@ func main() {
   // Data routes
   dataRouter := r.PathPrefix("/api/data").Subrouter()
 	dataRouter.Use(AuthMiddleware) 
-	dataRouter.HandleFunc("/{datatype}/{phonenumber}", HandleData).Methods("GET")
+  dataRouter.HandleFunc("/{datatype}/{phonenumber}", HandleData).Methods("GET")
 
   // Download routes
   downloadRouter := r.PathPrefix("/api/download").Subrouter()
