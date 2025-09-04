@@ -174,7 +174,7 @@ func verifyEmailCode(email, code string) (*user.User, error) {
 // Link WhatsApp phone number to user account
 func linkPhoneNumber(userID primitive.ObjectID, phoneNumber string) error {
   collection := db.GetCollection("users")
-  update := bson.M{"$set": bson.M{"phone_number": phoneNumber}}
+  update := bson.M{"$push": bson.M{"phone_numbers": phoneNumber}}
   _, err := collection.UpdateOne(context.TODO(), bson.M{"_id": userID}, update)
   return err
 }
@@ -522,4 +522,30 @@ func AutoRegisterFromWhatsApp(phoneNumber, name string) (*user.User, error) {
 
   user.ID = result.InsertedID.(primitive.ObjectID)
   return &user, nil
+}
+
+func HandleGetUser(w http.ResponseWriter, r *http.Request) {
+  ctx := r.Context()
+  userID := ctx.Value("user_id")
+  if userID == nil {
+    log.Printf("could not get userid from context")
+    http.Error(w, "Authorization header required", http.StatusUnauthorized)
+    return
+  }
+  log.Printf("Getting user from ID: %v", userID)
+
+  user, err := user.Read(userID.(string))
+  if err != nil {
+    log.Printf("could not read userID from context")
+    http.Error(w, "User Not Found", http.StatusNotFound)
+    return
+  }
+
+  json, err := json.Marshal(user)
+  if err != nil {
+    w.WriteHeader(http.StatusBadRequest) 
+    fmt.Fprintf(w, "%v", err)
+    return 
+  }
+  fmt.Fprint(w, string(json))
 }

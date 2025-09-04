@@ -1,30 +1,30 @@
 package main
 
 import (
-	"fmt"
-	"time"
-	"log"
-	"net/http"
-	"os"
-	"strings"
+  "fmt"
+  "time"
+  "log"
+  "net/http"
+  "os"
+  "strings"
 
   "github.com/gorilla/mux"
 )
 
 func logRequest(r *http.Request) {
-	uri := r.RequestURI
-	method := r.Method
-	fmt.Println("Got request!", method, uri)
+  uri := r.RequestURI
+  method := r.Method
+  fmt.Println("Got request!", method, uri)
 }
 
 // LoggingMiddleware logs incoming requests
 func LoggingMiddleware(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		start := time.Now()
-		log.Printf("Started %s %s", r.Method, r.URL.Path)
-		next.ServeHTTP(w, r) // Call the next handler in the chain
-		log.Printf("Completed %s %s in %v", r.Method, r.URL.Path, time.Since(start))
-	})
+  return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+    start := time.Now()
+    log.Printf("Started %s %s", r.Method, r.URL.Path)
+    next.ServeHTTP(w, r) // Call the next handler in the chain
+    log.Printf("Completed %s %s in %v", r.Method, r.URL.Path, time.Since(start))
+  })
 }
 
 // CorsMiddleware
@@ -53,23 +53,28 @@ func main() {
 
   // Handle the webhook setup request
   r.HandleFunc("/chat/message", HandleHubChallenge).
-    Methods("GET").
-    Queries("hub.mode", "{mode}").
-    Queries("hub.verify_token", "{token}").
-    Queries("hub.challenge", "{challenge}")
+  Methods("GET").
+  Queries("hub.mode", "{mode}").
+  Queries("hub.verify_token", "{token}").
+  Queries("hub.challenge", "{challenge}")
 
   // Text Message Handler
   r.HandleFunc("/chat/message", HandleChatMessage).Methods("POST")
 
   // Data routes
   dataRouter := r.PathPrefix("/api/data").Subrouter()
-	dataRouter.Use(AuthMiddleware) 
+  dataRouter.Use(AuthMiddleware) 
   dataRouter.HandleFunc("/{datatype}/{phonenumber}", HandleData).Methods("GET")
 
   // Download routes
   downloadRouter := r.PathPrefix("/api/download").Subrouter()
-	downloadRouter.Use(AuthMiddleware) 
-	downloadRouter.HandleFunc("/{datatype}/{phonenumber}", HandleDownload).Methods("GET")
+  downloadRouter.Use(AuthMiddleware) 
+  downloadRouter.HandleFunc("/{datatype}/{phonenumber}", HandleDownload).Methods("GET")
+
+  userRouter := r.PathPrefix("/api/user").Subrouter()
+  userRouter.Use(AuthMiddleware) 
+  userRouter.HandleFunc("/phonenumber", HandleLinkPhoneNumber).Methods("POST")
+  userRouter.HandleFunc("", HandleGetUser).Methods("GET")
 
   // Serve static files from the "static" directory
   staticFileDirectory := http.Dir("./static/")
@@ -77,26 +82,26 @@ func main() {
   r.PathPrefix("/static/").Handler(http.StripPrefix("/static/", fileServer))
 
   // Old Stuff
-	r.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprintf(w, "Hello! you've requested %s\n", r.URL.Path)
-	})
+  r.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+    fmt.Fprintf(w, "Hello! you've requested %s\n", r.URL.Path)
+  })
 
-	r.HandleFunc("/env", func(w http.ResponseWriter, r *http.Request) {
-		logRequest(r)
-		keys, ok := r.URL.Query()["key"]
-		if ok && len(keys) > 0 {
-			fmt.Fprint(w, os.Getenv(keys[0]))
-			return
-		}
-		envs := []string{}
-		envs = append(envs, os.Environ()...)
-		fmt.Fprint(w, strings.Join(envs, "\n"))
-	})
+  r.HandleFunc("/env", func(w http.ResponseWriter, r *http.Request) {
+    logRequest(r)
+    keys, ok := r.URL.Query()["key"]
+    if ok && len(keys) > 0 {
+      fmt.Fprint(w, os.Getenv(keys[0]))
+      return
+    }
+    envs := []string{}
+    envs = append(envs, os.Environ()...)
+    fmt.Fprint(w, strings.Join(envs, "\n"))
+  })
 
-	r.HandleFunc("/status", func(w http.ResponseWriter, r *http.Request) {
+  r.HandleFunc("/status", func(w http.ResponseWriter, r *http.Request) {
     fmt.Fprint(w, `{"status":"success"}`)
-	})
+  })
 
   log.Println("Starting Server")
-	log.Fatal(http.ListenAndServe(":8080", r))
+  log.Fatal(http.ListenAndServe(":8080", r))
 }
