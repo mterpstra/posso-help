@@ -11,6 +11,23 @@ import (
   "github.com/gorilla/mux"
 )
 
+var termColors []string
+var colorIndex int
+func init() {
+  colorIndex = 0
+  termColors = []string {
+    "\033[30m",
+    "\033[31m",
+    "\033[32m",
+    "\033[33m",
+    "\033[34m",
+    "\033[35m",
+    "\033[36m",
+    "\033[37m",
+  }
+}
+
+
 func logRequest(r *http.Request) {
   uri := r.RequestURI
   method := r.Method
@@ -20,10 +37,16 @@ func logRequest(r *http.Request) {
 // LoggingMiddleware logs incoming requests
 func LoggingMiddleware(next http.Handler) http.Handler {
   return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+    if colorIndex >= len(termColors) {
+      colorIndex = 0;
+    }
+    print(termColors[colorIndex])
     start := time.Now()
     log.Printf("Started %s %s", r.Method, r.URL.Path)
     next.ServeHTTP(w, r) // Call the next handler in the chain
     log.Printf("Completed %s %s in %v", r.Method, r.URL.Path, time.Since(start))
+    println("\033[0m")
+    colorIndex++;
   })
 }
 
@@ -64,7 +87,7 @@ func main() {
   // Data routes
   dataRouter := r.PathPrefix("/api/data").Subrouter()
   dataRouter.Use(AuthMiddleware) 
-  dataRouter.HandleFunc("/{datatype}/{phonenumber}", HandleData).Methods("GET")
+  dataRouter.HandleFunc("/{datatype}", HandleData).Methods("GET")
 
   // Download routes
   downloadRouter := r.PathPrefix("/api/download").Subrouter()

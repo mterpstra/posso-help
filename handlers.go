@@ -9,6 +9,7 @@ import (
   "strconv"
   "posso-help/internal/chat"
   "posso-help/internal/db"
+  "posso-help/internal/user"
   "github.com/gorilla/mux"
 )
 
@@ -48,9 +49,23 @@ func HandleUpload(w http.ResponseWriter, r *http.Request) {
 func HandleData(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	datatype := vars["datatype"]
-	phoneNumber := vars["phonenumber"]
 
-  data, err := db.ReadUnordered(datatype, phoneNumber)
+  ctx := r.Context()
+  userID := ctx.Value("user_id")
+  if userID == nil {
+    log.Printf("could not get userid from context")
+    http.Error(w, "Authorization header required", http.StatusUnauthorized)
+    return
+  }
+
+  user, err := user.Read(userID.(string))
+  if err != nil {
+    log.Printf("could not read userID from context")
+    http.Error(w, "User Not Found", http.StatusNotFound)
+    return
+  }
+
+  data, err := db.ReadUnordered(datatype, user.PhoneNumbers[0])
   if err != nil {
 		w.WriteHeader(http.StatusBadRequest) 
 		fmt.Fprintf(w, "%v", err)

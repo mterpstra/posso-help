@@ -225,15 +225,21 @@ func HandleAuthRegister(w http.ResponseWriter, r *http.Request) {
     return
   }
 
+  log.Printf("Request Phone Number [%v]", req.PhoneNumber)
+  phoneNumbers := []string{}
+  if len(req.PhoneNumber) > 0 {
+    phoneNumbers = append(phoneNumbers, req.PhoneNumber)
+  }
+
   // Create new user
   user := user.User{
-    Username:    req.Username,
-    Email:       req.Email,
-    Password:    hashedPassword,
-    PhoneNumber: req.PhoneNumber,
-    CreatedAt:   time.Now(),
-    UpdatedAt:   time.Now(),
-    IsActive:    false, // Will be activated after email verification
+    Username:     req.Username,
+    Email:        req.Email,
+    Password:     hashedPassword,
+    CreatedAt:    time.Now(),
+    UpdatedAt:    time.Now(),
+    IsActive:     false, // Will be activated after email verification
+    PhoneNumbers: phoneNumbers,
   }
 
   result, err := collection.InsertOne(context.TODO(), user)
@@ -427,6 +433,7 @@ func HandleLinkPhoneNumber(w http.ResponseWriter, r *http.Request) {
   if err != nil {
     response := AuthResponse{Success: false, Message: "Error linking phone number"}
     json.NewEncoder(w).Encode(response)
+    log.Printf("error linking phone number %v", err);
     return
   }
 
@@ -471,7 +478,8 @@ func AuthMiddleware(next http.Handler) http.Handler {
     ctx = context.WithValue(ctx, "user_email", claims.Email)
     ctx = context.WithValue(ctx, "phone_number", claims.PhoneNumber)
 
-    log.Printf("UserID %v\nEmail %v\nPhone %v\n", claims.UserID, claims.Email, claims.PhoneNumber)
+    log.Printf("UserID:%v   Email:%v   Phone:%v", 
+      claims.UserID, claims.Email, claims.PhoneNumber)
 
     log.Printf("AuthMiddleware ended")
     next.ServeHTTP(w, r.WithContext(ctx))
