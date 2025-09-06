@@ -17,9 +17,23 @@ func HandleDownload(w http.ResponseWriter, r *http.Request) {
   log.Printf("HandleDownload()\n")
 	vars := mux.Vars(r)
 	datatype := vars["datatype"]
-	phoneNumber := vars["phonenumber"]
 
-  data, err := db.ReadOrdered(datatype, phoneNumber)
+  ctx := r.Context()
+  userID := ctx.Value("user_id")
+  if userID == nil {
+    log.Printf("could not get userid from context")
+    http.Error(w, "Authorization header required", http.StatusUnauthorized)
+    return
+  }
+
+  user, err := user.Read(userID.(string))
+  if err != nil {
+    log.Printf("could not read userID from context")
+    http.Error(w, "User Not Found", http.StatusNotFound)
+    return
+  }
+
+  data, err := db.ReadOrdered(datatype, user.PhoneNumbers)
   if err != nil {
 		w.WriteHeader(http.StatusBadRequest) 
 		fmt.Fprintf(w, "%v", err)
@@ -65,7 +79,7 @@ func HandleData(w http.ResponseWriter, r *http.Request) {
     return
   }
 
-  data, err := db.ReadUnordered(datatype, user.PhoneNumbers[0])
+  data, err := db.ReadUnordered(datatype, user.PhoneNumbers)
   if err != nil {
 		w.WriteHeader(http.StatusBadRequest) 
 		fmt.Fprintf(w, "%v", err)

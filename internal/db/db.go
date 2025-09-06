@@ -52,9 +52,9 @@ func GetCollection(collection string) *mongo.Collection {
 	return conn.Database(DATABASE_NAME).Collection(collection)
 }
 
-func ReadOrdered(collection, phone string) ([]bson.D, error) {
+func ReadOrdered(collection string, phoneNumbers []string) ([]bson.D, error) {
   dataset := GetCollection(collection)
-  filter := bson.M{"phone": phone}
+  filter := bson.M{"phone": bson.M{"$in": phoneNumbers}}
   cursor, err := dataset.Find(context.Background(), filter)
   if err != nil {
     log.Fatal(err)
@@ -68,9 +68,9 @@ func ReadOrdered(collection, phone string) ([]bson.D, error) {
 }
 
 // No Order
-func ReadUnordered(collection, phone string) ([]bson.M, error) {
+func ReadUnordered(collection string, phoneNumbers []string) ([]bson.M, error) {
   dataset := GetCollection(collection)
-  filter := bson.M{"phone": phone}
+  filter := bson.M{"phone": bson.M{"$in": phoneNumbers}}
   cursor, err := dataset.Find(context.Background(), filter)
   if err != nil {
     log.Fatal(err)
