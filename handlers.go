@@ -4,8 +4,10 @@ import (
   "io"
   "log"
   "fmt"
+  "time"
   "net/http"
   "encoding/json"
+  "context"
   "strconv"
   "posso-help/internal/chat"
   "posso-help/internal/db"
@@ -60,7 +62,7 @@ func HandleDownload(w http.ResponseWriter, r *http.Request) {
 func HandleUpload(w http.ResponseWriter, r *http.Request) {
 }
 
-func HandleData(w http.ResponseWriter, r *http.Request) {
+func HandleDataGet(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	datatype := vars["datatype"]
 
@@ -93,6 +95,56 @@ func HandleData(w http.ResponseWriter, r *http.Request) {
 		return 
   }
   fmt.Fprint(w, string(json))
+  return 
+}
+
+func HandleDataPost(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	datatype := vars["datatype"]
+
+  ctx := r.Context()
+  userID := ctx.Value("user_id")
+  if userID == nil {
+    log.Printf("could not get userid from context")
+    http.Error(w, "Authorization header required", http.StatusUnauthorized)
+    return
+  }
+
+  u, err := user.Read(userID.(string))
+  if err != nil {
+    log.Printf("could not read userID from context")
+    http.Error(w, "User Not Found", http.StatusNotFound)
+    return
+  }
+
+  collection := db.GetCollection(datatype);
+
+  defer r.Body.Close()
+  bodyBytes, err := io.ReadAll(r.Body)
+  if err != nil {
+    http.Error(w, "Error reading request body", http.StatusInternalServerError)
+    log.Printf("Error reading request body: %v", err)
+    return
+  }
+
+
+  // Unmarshal the JSON into a User struct
+  birth := &chat.Birth{}
+  err = json.Unmarshal(bodyBytes, birth)
+  if err != nil {
+    http.Error(w, "Error unmarshalling JSON", http.StatusBadRequest)
+    log.Printf("Error unmarshalling JSON: %v", err)
+    return 
+  }
+  birth.EntryId = fmt.Sprintf("dashboard-%d", time.Now().Unix())
+  birth.MessageId = "manual-entry"
+  birth.Phone = u.PhoneNumbers[0]
+  birth.Name = u.Name
+  if birth.Name == "" {
+    birth.Name = u.Username
+  }
+
+  _, err = collection.InsertOne(context.TODO(), birth)
   return 
 }
 

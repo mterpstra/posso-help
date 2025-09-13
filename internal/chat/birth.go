@@ -11,8 +11,20 @@ import (
   "go.mongodb.org/mongo-driver/bson"
 )
 
-
 const REPLY_BIRTHS = `Posso Help has detected birth data.  We added %d births to area %s. To claim your data and see a report sign up at https://possohelp.com` 
+
+type Birth struct {
+  EntryId   string `json:"entry_id"`
+  MessageId string `json:"message_id"`
+  Phone     string `json:"phone"`
+  Name      string `json:"phone"`
+  Date      string `json:"date"`
+  Tag       int64  `json:"tag" bson:"tag, omitempty"`
+  Pure      bool   `json:"pure_bread"`
+  Sex       string `json:"sex"`
+  Breed     string `json:"breed"`
+  Area      string `json:"area"`
+}
 
 type BirthEntry struct {
   PureBred bool   `json:"pure_bred"`
