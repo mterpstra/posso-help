@@ -2,7 +2,6 @@ package user
 
 import (
   "context"
-  "log"
   "time"
   "posso-help/internal/db"
   "go.mongodb.org/mongo-driver/bson"
@@ -34,6 +33,5 @@ func Read(Id string) (*User, error) {
   if err != nil {
     return nil, err
   }
-  log.Printf("User Found: %+v\n", user)
   return user, nil
 }

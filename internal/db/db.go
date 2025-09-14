@@ -48,7 +48,6 @@ func GetCollection(collection string) *mongo.Collection {
   if conn == nil {
     Connect() 
   }
-  log.Printf("returning collection: %v\n", collection)
 	return conn.Database(DATABASE_NAME).Collection(collection)
 }
 
@@ -71,6 +70,8 @@ func ReadOrdered(collection string, phoneNumbers []string) ([]bson.D, error) {
 func ReadUnordered(collection string, phoneNumbers []string) ([]bson.M, error) {
   dataset := GetCollection(collection)
   filter := bson.M{"phone": bson.M{"$in": phoneNumbers}}
+
+  log.Printf("db lookup: collection=%s filter=%v", collection, filter)
   cursor, err := dataset.Find(context.Background(), filter)
   if err != nil {
     log.Fatal(err)

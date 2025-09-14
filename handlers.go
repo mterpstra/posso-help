@@ -98,10 +98,7 @@ func HandleDataGet(w http.ResponseWriter, r *http.Request) {
   return 
 }
 
-func HandleDataPost(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	datatype := vars["datatype"]
-
+func HandleBirthPost(w http.ResponseWriter, r *http.Request) {
   ctx := r.Context()
   userID := ctx.Value("user_id")
   if userID == nil {
@@ -117,7 +114,7 @@ func HandleDataPost(w http.ResponseWriter, r *http.Request) {
     return
   }
 
-  collection := db.GetCollection(datatype);
+  collection := db.GetCollection("births");
 
   defer r.Body.Close()
   bodyBytes, err := io.ReadAll(r.Body)
@@ -127,8 +124,6 @@ func HandleDataPost(w http.ResponseWriter, r *http.Request) {
     return
   }
 
-
-  // Unmarshal the JSON into a User struct
   birth := &chat.Birth{}
   err = json.Unmarshal(bodyBytes, birth)
   if err != nil {
@@ -145,6 +140,165 @@ func HandleDataPost(w http.ResponseWriter, r *http.Request) {
   }
 
   _, err = collection.InsertOne(context.TODO(), birth)
+  if err != nil {
+    http.Error(w, "Error Inserting Birth", http.StatusBadRequest)
+    log.Printf("Error Inserting Birth: %v", err)
+    return 
+  }
+  
+  return 
+}
+
+func HandleDeathPost(w http.ResponseWriter, r *http.Request) {
+  ctx := r.Context()
+  userID := ctx.Value("user_id")
+  if userID == nil {
+    log.Printf("could not get userid from context")
+    http.Error(w, "Authorization header required", http.StatusUnauthorized)
+    return
+  }
+
+  u, err := user.Read(userID.(string))
+  if err != nil {
+    log.Printf("could not read userID from context")
+    http.Error(w, "User Not Found", http.StatusNotFound)
+    return
+  }
+
+  collection := db.GetCollection("deaths");
+
+  defer r.Body.Close()
+  bodyBytes, err := io.ReadAll(r.Body)
+  if err != nil {
+    http.Error(w, "Error reading request body", http.StatusInternalServerError)
+    log.Printf("Error reading request body: %v", err)
+    return
+  }
+
+  death := &chat.Death{}
+  err = json.Unmarshal(bodyBytes, death)
+  if err != nil {
+    http.Error(w, "Error unmarshalling JSON", http.StatusBadRequest)
+    log.Printf("Error unmarshalling JSON: %v", err)
+    return 
+  }
+  death.EntryId = fmt.Sprintf("dashboard-%d", time.Now().Unix())
+  death.MessageId = "manual-entry"
+  death.Phone = u.PhoneNumbers[0]
+  death.Name = u.Name
+  if death.Name == "" {
+    death.Name = u.Username
+  }
+
+  _, err = collection.InsertOne(context.TODO(), death)
+  if err != nil {
+    http.Error(w, "Error Inserting Birth", http.StatusBadRequest)
+    log.Printf("Error Inserting Birth: %v", err)
+    return 
+  }
+  
+  return 
+}
+
+func HandleTemperaturePost(w http.ResponseWriter, r *http.Request) {
+  ctx := r.Context()
+  userID := ctx.Value("user_id")
+  if userID == nil {
+    log.Printf("could not get userid from context")
+    http.Error(w, "Authorization header required", http.StatusUnauthorized)
+    return
+  }
+
+  u, err := user.Read(userID.(string))
+  if err != nil {
+    log.Printf("could not read userID from context")
+    http.Error(w, "User Not Found", http.StatusNotFound)
+    return
+  }
+
+  collection := db.GetCollection("temperature");
+
+  defer r.Body.Close()
+  bodyBytes, err := io.ReadAll(r.Body)
+  if err != nil {
+    http.Error(w, "Error reading request body", http.StatusInternalServerError)
+    log.Printf("Error reading request body: %v", err)
+    return
+  }
+
+  temperature := &chat.Temperature{}
+  err = json.Unmarshal(bodyBytes, temperature)
+  if err != nil {
+    http.Error(w, "Error unmarshalling JSON", http.StatusBadRequest)
+    log.Printf("Error unmarshalling JSON: %v", err)
+    return 
+  }
+  temperature.EntryId = fmt.Sprintf("dashboard-%d", time.Now().Unix())
+  temperature.MessageId = "manual-entry"
+  temperature.Phone = u.PhoneNumbers[0]
+  temperature.Name = u.Name
+  if temperature.Name == "" {
+    temperature.Name = u.Username
+  }
+
+  _, err = collection.InsertOne(context.TODO(), temperature)
+  if err != nil {
+    http.Error(w, "Error Inserting Temperature", http.StatusBadRequest)
+    log.Printf("Error Inserting Temperature: %v", err)
+    return 
+  }
+  
+  return 
+}
+
+func HandleRainPost(w http.ResponseWriter, r *http.Request) {
+  ctx := r.Context()
+  userID := ctx.Value("user_id")
+  if userID == nil {
+    log.Printf("could not get userid from context")
+    http.Error(w, "Authorization header required", http.StatusUnauthorized)
+    return
+  }
+
+  u, err := user.Read(userID.(string))
+  if err != nil {
+    log.Printf("could not read userID from context")
+    http.Error(w, "User Not Found", http.StatusNotFound)
+    return
+  }
+
+  collection := db.GetCollection("rain");
+
+  defer r.Body.Close()
+  bodyBytes, err := io.ReadAll(r.Body)
+  if err != nil {
+    http.Error(w, "Error reading request body", http.StatusInternalServerError)
+    log.Printf("Error reading request body: %v", err)
+    return
+  }
+
+  rain := &chat.Rain{}
+  err = json.Unmarshal(bodyBytes, rain)
+  if err != nil {
+    http.Error(w, "Error unmarshalling JSON", http.StatusBadRequest)
+    log.Printf("Error unmarshalling JSON: %v", err)
+    return 
+  }
+  rain.EntryId = fmt.Sprintf("dashboard-%d", time.Now().Unix())
+  rain.MessageId = "manual-entry"
+  rain.Phone = u.PhoneNumbers[0]
+  rain.Name = u.Name
+  if rain.Name == "" {
+    rain.Name = u.Username
+  }
+
+  _, err = collection.InsertOne(context.TODO(), rain)
+  if err != nil {
+    http.Error(w, "Error Inserting Temperature", http.StatusBadRequest)
+    log.Printf("Error Inserting Temperature: %v", err)
+    return 
+  }
+  
   return 
 }
 

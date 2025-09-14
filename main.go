@@ -7,10 +7,12 @@ import (
   "net/http"
   "os"
   "strings"
+  "sync"
 
   "github.com/gorilla/mux"
 )
 
+var mu sync.Mutex
 var termColors []string
 var colorIndex int
 func init() {
@@ -27,16 +29,17 @@ func init() {
   }
 }
 
-
-func logRequest(r *http.Request) {
-  uri := r.RequestURI
-  method := r.Method
-  fmt.Println("Got request!", method, uri)
-}
-
 // LoggingMiddleware logs incoming requests
 func LoggingMiddleware(next http.Handler) http.Handler {
   return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+
+    // @todo: Remove this mutex for production builds.  This forces
+    //        a single request to finish before the next starts.
+    //        Nice for debugging since React in development mode 
+    ///       fires two useEffect hooks to force strong components.
+    mu.Lock()
+    defer mu.Unlock()
+
     if colorIndex >= len(termColors) {
       colorIndex = 0;
     }
@@ -45,8 +48,9 @@ func LoggingMiddleware(next http.Handler) http.Handler {
     log.Printf("Started %s %s", r.Method, r.URL.Path)
     next.ServeHTTP(w, r) // Call the next handler in the chain
     log.Printf("Completed %s %s in %v", r.Method, r.URL.Path, time.Since(start))
-    println("\033[0m")
+    print("\033[0m")
     colorIndex++;
+
   })
 }
 
@@ -77,7 +81,10 @@ func main() {
   dataRouter := r.PathPrefix("/api/data").Subrouter()
   dataRouter.Use(AuthMiddleware) 
   dataRouter.HandleFunc("/{datatype}", HandleDataGet).Methods("GET")
-  dataRouter.HandleFunc("/{datatype}", HandleDataPost).Methods("POST")
+  dataRouter.HandleFunc("/births", HandleBirthPost).Methods("POST")
+  dataRouter.HandleFunc("/deaths", HandleDeathPost).Methods("POST")
+  dataRouter.HandleFunc("/temperature", HandleTemperaturePost).Methods("POST")
+  dataRouter.HandleFunc("/rain", HandleRainPost).Methods("POST")
 
   // Download routes
   downloadRouter := r.PathPrefix("/api/download").Subrouter()
@@ -100,7 +107,6 @@ func main() {
   })
 
   r.HandleFunc("/env", func(w http.ResponseWriter, r *http.Request) {
-    logRequest(r)
     keys, ok := r.URL.Query()["key"]
     if ok && len(keys) > 0 {
       fmt.Fprint(w, os.Getenv(keys[0]))

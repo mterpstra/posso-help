@@ -17,6 +17,15 @@ import (
 
 const REPLY_TEMPERATURE = `Posso Help has detected temperature data.  We added %d days of temperature data.  To claim your data and see a report sign up at https://possohelp.com` 
 
+type Temperature struct {
+  EntryId     string `json:"entry_id"`
+  MessageId   string `json:"message_id"`
+  Phone       string `json:"phone"`
+  Name        string `json:"name"`
+  Date        string `json:"date"`
+  Temperature int    `json:"temperature"`
+}
+
 type TemperatureEntry struct {
   Date string
   Temperature int // in Celcius

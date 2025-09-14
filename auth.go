@@ -449,14 +449,12 @@ func HandleLinkPhoneNumber(w http.ResponseWriter, r *http.Request) {
 // Authentication middleware
 func AuthMiddleware(next http.Handler) http.Handler {
   return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-    log.Printf("AuthMiddleware started")
     authHeader := r.Header.Get("Authorization")
 
     if authHeader == "" {
       // If we can't get it from the header, get it from the query string.
       // @todo:  I think this was for download links.  Is this needed?
       authHeader = r.URL.Query().Get("token")
-      log.Printf("auth header from query")
     }
 
     if authHeader == "" {
@@ -465,9 +463,7 @@ func AuthMiddleware(next http.Handler) http.Handler {
       return
     }
 
-    log.Printf("authHeader: %v", authHeader)
     tokenString := strings.Replace(authHeader, "Bearer ", "", 1)
-    log.Printf("token: [%v]", tokenString)
     claims, err := validateJWTToken(tokenString)
     if err != nil {
       log.Printf("Token is Invalid")
@@ -480,10 +476,6 @@ func AuthMiddleware(next http.Handler) http.Handler {
     ctx = context.WithValue(ctx, "user_email", claims.Email)
     ctx = context.WithValue(ctx, "phone_number", claims.PhoneNumber)
 
-    log.Printf("UserID:%v   Email:%v   Phone:%v", 
-      claims.UserID, claims.Email, claims.PhoneNumber)
-
-    log.Printf("AuthMiddleware ended")
     next.ServeHTTP(w, r.WithContext(ctx))
   })
 }

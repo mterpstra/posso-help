@@ -13,6 +13,15 @@ import (
 
 const REPLY_RAINFALL = `Posso Help has detected rainfall data.  We added %d mm of rain. To claim your data and see a report sign up at https://possohelp.com` 
 
+type Rain struct {
+  EntryId   string `json:"entry_id"`
+  MessageId string `json:"message_id"`
+  Phone     string `json:"phone"`
+  Name      string `json:"phone"`
+  Date      string `json:"date"`
+  Amount    int    `json:"amount"`
+}
+
 type RainEntry struct {
   Date string
   Amount int // in mm
