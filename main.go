@@ -81,10 +81,13 @@ func main() {
   dataRouter := r.PathPrefix("/api/data").Subrouter()
   dataRouter.Use(AuthMiddleware) 
   dataRouter.HandleFunc("/{datatype}", HandleDataGet).Methods("GET")
+  /*
   dataRouter.HandleFunc("/births", HandleBirthPost).Methods("POST")
   dataRouter.HandleFunc("/deaths", HandleDeathPost).Methods("POST")
   dataRouter.HandleFunc("/temperature", HandleTemperaturePost).Methods("POST")
   dataRouter.HandleFunc("/rain", HandleRainPost).Methods("POST")
+  */
+  dataRouter.HandleFunc("/{datatype}", HandleDataPost).Methods("POST")
 
   // Download routes
   downloadRouter := r.PathPrefix("/api/download").Subrouter()

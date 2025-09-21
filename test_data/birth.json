@@ -1,0 +1,39 @@
+{
+  "object": "whatsapp_business_account",
+  "entry": [
+    {
+      "id": "756814173901568",
+      "changes": [
+        {
+          "value": {
+            "messaging_product": "whatsapp",
+            "metadata": {
+              "display_phone_number": "15551939558",
+              "phone_number_id": "807095752486132"
+            },
+            "contacts": [
+              {
+                "profile": {
+                  "name": "MT"
+                },
+                "wa_id": "16166100305"
+              }
+            ],
+            "messages": [
+              {
+                "from": "16166100305",
+                "id": "wamid.HBgLMTYxNjYxMDAzMDUVAgASGBQzQUZDRENBRTcxMDJGOTI2MkM3QwA=",
+                "timestamp": "1758403149",
+                "text": {
+                  "body": "1111 m angus\n2222 f nalore\npai armando"
+                },
+                "type": "text"
+              }
+            ]
+          },
+          "field": "messages"
+        }
+      ]
+    }
+  ]
+}

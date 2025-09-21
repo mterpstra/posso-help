@@ -85,15 +85,16 @@ func (ms *MessageSender) send(jsonPayload []byte) error {
 	}
 	defer resp.Body.Close()
 
-  // Check the HTTP status code
-	if resp.StatusCode != http.StatusOK {
-		log.Printf("Unexpected status code: %d", resp.StatusCode)
-	}
-
 	// Read the response body
 	bodyBytes, err := io.ReadAll(resp.Body)
 	if err != nil {
 		log.Printf("Error reading response body: %v", err)
+	}
+
+  // Check the HTTP status code
+	if resp.StatusCode != http.StatusOK {
+    log.Printf("Unexpected status code: %d: %s", resp.StatusCode, string(bodyBytes))
+    return errors.New("error_sending_text_message")
 	}
 
 	// Convert the byte slice to a string
@@ -105,7 +106,7 @@ func (ms *MessageSender) send(jsonPayload []byte) error {
 }
 
 func (ms *MessageSender) Send() error {
-  log.Printf("message senderer sending message")
+  log.Printf("message sender sending message")
   payload, err := ms.getPayload()
   if err != nil {
     log.Printf("message sender payload error: %v\n", err)

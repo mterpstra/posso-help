@@ -33,3 +33,11 @@ func Capitalize(str string) string {
   last := strings.ToLower(str[1:])
   return first + last 
 }
+
+func SplitAndTrim(str string) []string {
+  parts := strings.Split(str, ",")
+  for i, part := range parts {
+    parts[i] = strings.TrimSpace(part)
+  }
+  return parts
+}

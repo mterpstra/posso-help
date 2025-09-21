@@ -225,13 +225,11 @@ func HandleAuthRegister(w http.ResponseWriter, r *http.Request) {
     return
   }
 
-  /*
-  log.Printf("Request Phone Number [%v]", req.PhoneNumber)
+  // Used to search for data (for now)
   phoneNumbers := []string{}
   if len(req.PhoneNumber) > 0 {
     phoneNumbers = append(phoneNumbers, req.PhoneNumber)
   }
-  */
 
   // Create new user
   user := user.User{
@@ -242,6 +240,7 @@ func HandleAuthRegister(w http.ResponseWriter, r *http.Request) {
     UpdatedAt:    time.Now(),
     IsActive:     false, // Will be activated after email verification
     PhoneNumber:  req.PhoneNumber,
+    PhoneNumbers: phoneNumbers,
   }
 
   result, err := collection.InsertOne(context.TODO(), user)
