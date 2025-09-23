@@ -2,6 +2,7 @@ package chat
 
 import (
   "context"
+  "log"
   "fmt"
   "strings"
   "posso-help/internal/area"
@@ -37,6 +38,8 @@ type BirthMessage struct {
   Date string
   Entries []*BirthEntry
   Area *area.Area
+  AreaParser *area.AreaParser
+  NewAreaFound bool
   Total int
 }
 
@@ -55,7 +58,7 @@ func (b *BirthMessage) Parse(message string) bool {
       found = true
       parsedLines[index] = true
     }
-    if areaName, found := area.ParseAsAreaLine(line); found {
+    if areaName, found := b.AreaParser.ParseAsAreaLine(line); found {
       b.Area = &area.Area{Name:areaName}
       parsedLines[index] = true
     }
@@ -68,11 +71,8 @@ func (b *BirthMessage) Parse(message string) bool {
   if found && b.Area == nil && !parsedLines[len(lines)-1] {
     newArea := utils.SanitizeLine(lines[len(lines)-1])
     b.Area = &area.Area{Name:newArea}
-    println("New Area Found", newArea)
-    err := area.AddArea("16166100305", newArea) 
-    if err != nil {
-      fmt.Printf("Could not add new area %v", err)
-    }
+    log.Printf("New Area Found \"%s\"", newArea)
+    b.NewAreaFound = true
   }
 
   if found && b.Area == nil {
@@ -129,6 +129,13 @@ func (b *BirthMessage) Insert(bmv *BaseMessageValues) error {
     _, err := births.InsertOne(context.TODO(), document)
     if err != nil {
       return err
+    }
+  }
+
+  if b.NewAreaFound {
+    err := area.AddArea(bmv.Account, b.Area.Name, b.Area.Name) 
+    if err != nil {
+      fmt.Printf("Could not add new area %v", err)
     }
   }
   

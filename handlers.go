@@ -4,7 +4,6 @@ import (
   "io"
   "log"
   "fmt"
-  "time"
   "net/http"
   "encoding/json"
   "context"
@@ -35,7 +34,7 @@ func HandleDownload(w http.ResponseWriter, r *http.Request) {
     return
   }
 
-  data, err := db.ReadOrdered(datatype, user.PhoneNumbers)
+  data, err := db.ReadOrdered(datatype, user.ID.Hex())
   if err != nil {
 		w.WriteHeader(http.StatusBadRequest) 
 		fmt.Fprintf(w, "%v", err)
@@ -81,7 +80,7 @@ func HandleDataGet(w http.ResponseWriter, r *http.Request) {
     return
   }
 
-  data, err := db.ReadUnordered(datatype, user.PhoneNumbers)
+  data, err := db.ReadUnordered(datatype, user.ID.Hex())
   if err != nil {
 		w.WriteHeader(http.StatusBadRequest) 
 		fmt.Fprintf(w, "%v", err)
@@ -140,13 +139,8 @@ func HandleDataPost(w http.ResponseWriter, r *http.Request) {
     return 
   }
 
-  data["entry_id"]   = fmt.Sprintf("dashboard-%d", time.Now().Unix())
-  data["message_id"] = "manual-entry"
-  data["phone"]      = u.PhoneNumbers[0]
-  data["name"]       = u.Name
-  if data["name"] == "" {
-    data["name"] = u.Username
-  }
+  // Use the users user id as the account number for now
+  data["account"] = u.ID.Hex()
 
   _, err = collection.InsertOne(context.TODO(), data)
   if err != nil {

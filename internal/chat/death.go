@@ -37,6 +37,7 @@ type DeathMessage struct {
   Date string
   Entries []*DeathEntry
   Area *area.Area
+  AreaParser *area.AreaParser
   Total int
 }
 
@@ -52,7 +53,7 @@ func (d *DeathMessage) Parse(message string) bool {
       d.Total++
       found = true
     }
-    if areaName, found := area.ParseAsAreaLine(line); found {
+    if areaName, found := d.AreaParser.ParseAsAreaLine(line); found {
       d.Area = &area.Area{Name: areaName}
     }
   }
