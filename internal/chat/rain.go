@@ -11,7 +11,7 @@ import (
   "go.mongodb.org/mongo-driver/bson"
 )
 
-const REPLY_RAINFALL = `Posso Help has detected rainfall data.  We added %d mm of rain. To claim your data and see a report sign up at https://possohelp.com` 
+const REPLY_RAINFALL = `Zap Manejo has detected rainfall data.  We added %d mm of rain. To claim your data and see a report sign up at https://dashboard.zapmanejo.com/`
 
 type Rain struct {
   EntryId   string `json:"entry_id"`

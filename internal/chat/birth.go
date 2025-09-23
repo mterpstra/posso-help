@@ -12,7 +12,7 @@ import (
   "go.mongodb.org/mongo-driver/bson"
 )
 
-const REPLY_BIRTHS = `Posso Help has detected birth data.  We added %d births to area %s. To claim your data and see a report sign up at https://possohelp.com` 
+const REPLY_BIRTHS = `Zap Manejo has detected birth data.  We added %d births to area %s. To claim your data and see a report sign up at https://dashboard.zapmanejo.com/`
 
 type Birth struct {
   EntryId   string `json:"entry_id"`

@@ -112,6 +112,7 @@ func (ms *MessageSender) Send() error {
     log.Printf("message sender payload error: %v\n", err)
     return err
   }
+  log.Printf("Sending text message: %s", ms.Text.Body)
   err = ms.validate()
   if err != nil {
     log.Printf("message sender validation error: %v\n", err)

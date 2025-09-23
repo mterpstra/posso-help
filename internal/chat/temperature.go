@@ -15,7 +15,7 @@ import (
 // "dd/m 35C"
 // "dd/m 35 C"
 
-const REPLY_TEMPERATURE = `Posso Help has detected temperature data.  We added %d days of temperature data.  To claim your data and see a report sign up at https://possohelp.com` 
+const REPLY_TEMPERATURE = `Zap Manejo has detected temperature data.  We added %d days of temperature data.  To claim your data and see a report sign up at https://dashboard.zapmanejo.com/`
 
 type Temperature struct {
   EntryId     string `json:"entry_id"`
