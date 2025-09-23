@@ -8,6 +8,7 @@ import (
   "os"
   "strings"
   "sync"
+  "path/filepath"
 
   "github.com/gorilla/mux"
 )
@@ -60,12 +61,10 @@ func main() {
   // Apply the logging middleware to all routes
   r.Use(LoggingMiddleware)
 
-
   // Non-Auth register/login routes
   r.HandleFunc("/api/auth/register", HandleAuthRegister).Methods("POST")
   r.HandleFunc("/api/auth/verify-email", HandleEmailVerification)
   r.HandleFunc("/api/auth/login", HandleLogin)
-
 
   // Handle the webhook setup request
   r.HandleFunc("/chat/message", HandleHubChallenge).
@@ -81,12 +80,6 @@ func main() {
   dataRouter := r.PathPrefix("/api/data").Subrouter()
   dataRouter.Use(AuthMiddleware) 
   dataRouter.HandleFunc("/{datatype}", HandleDataGet).Methods("GET")
-  /*
-  dataRouter.HandleFunc("/births", HandleBirthPost).Methods("POST")
-  dataRouter.HandleFunc("/deaths", HandleDeathPost).Methods("POST")
-  dataRouter.HandleFunc("/temperature", HandleTemperaturePost).Methods("POST")
-  dataRouter.HandleFunc("/rain", HandleRainPost).Methods("POST")
-  */
   dataRouter.HandleFunc("/{datatype}", HandleDataPost).Methods("POST")
 
   // Download routes
@@ -100,13 +93,14 @@ func main() {
   userRouter.HandleFunc("", HandleGetUser).Methods("GET")
 
   // Serve static files from the "static" directory
-  staticFileDirectory := http.Dir("./static/")
-  fileServer := http.FileServer(staticFileDirectory)
-  r.PathPrefix("/static/").Handler(http.StripPrefix("/static/", fileServer))
-
-  // Old Stuff
-  r.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-    fmt.Fprintf(w, "Hello! you've requested %s\n", r.URL.Path)
+  staticFileServer := http.FileServer(http.Dir("./static/"))
+  r.PathPrefix("/static/").Handler(http.StripPrefix("/static/", staticFileServer))
+  r.HandleFunc("/", func(w http.ResponseWriter, req *http.Request) {
+    if req.URL.Path == "/" {
+      http.ServeFile(w, req, filepath.Join("./static", "index.html"))
+    	return
+    }
+    staticFileServer.ServeHTTP(w, req)
   })
 
   r.HandleFunc("/env", func(w http.ResponseWriter, r *http.Request) {
