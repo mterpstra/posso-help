@@ -37,9 +37,10 @@ type Claims struct {
 // Registration request structure
 type RegisterRequest struct {
   Username    string `json:"username"`
+  Name        string `json:"name,omitempty"`
   Email       string `json:"email"`
   Password    string `json:"password"`
-  PhoneNumber string `json:"phone_number,omitempty"`
+  PhoneNumber string `json:"phone_number"`
 }
 
 // Login request structure
@@ -225,22 +226,16 @@ func HandleAuthRegister(w http.ResponseWriter, r *http.Request) {
     return
   }
 
-  // Used to search for data (for now)
-  phoneNumbers := []string{}
-  if len(req.PhoneNumber) > 0 {
-    phoneNumbers = append(phoneNumbers, req.PhoneNumber)
-  }
-
   // Create new user
   user := user.User{
     Username:     req.Username,
+    Name:         req.Name,
     Email:        req.Email,
     Password:     hashedPassword,
     CreatedAt:    time.Now(),
     UpdatedAt:    time.Now(),
     IsActive:     false, // Will be activated after email verification
     PhoneNumber:  req.PhoneNumber,
-    PhoneNumbers: phoneNumbers,
   }
 
   result, err := collection.InsertOne(context.TODO(), user)
@@ -392,55 +387,6 @@ func HandleEmailVerification(w http.ResponseWriter, r *http.Request) {
     Message: "Email verified successfully",
     Token:   token,
     User:    user,
-  }
-  json.NewEncoder(w).Encode(response)
-}
-
-// WhatsApp phone linking handler
-func HandleLinkPhoneNumber(w http.ResponseWriter, r *http.Request) {
-  if r.Method != "POST" {
-    http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-    return
-  }
-
-  // Get user from JWT token
-  authHeader := r.Header.Get("Authorization")
-  if authHeader == "" {
-    response := AuthResponse{Success: false, Message: "Authorization header required"}
-    json.NewEncoder(w).Encode(response)
-    return
-  }
-
-  tokenString := strings.Replace(authHeader, "Bearer ", "", 1)
-  claims, err := validateJWTToken(tokenString)
-  if err != nil {
-    response := AuthResponse{Success: false, Message: "Invalid authentication token"}
-    json.NewEncoder(w).Encode(response)
-    return
-  }
-
-  var req struct {
-    PhoneNumber string `json:"phone_number"`
-  }
-
-  if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-    response := AuthResponse{Success: false, Message: "Invalid request format"}
-    json.NewEncoder(w).Encode(response)
-    return
-  }
-
-  userID, _ := primitive.ObjectIDFromHex(claims.UserID)
-  err = linkPhoneNumber(userID, req.PhoneNumber)
-  if err != nil {
-    response := AuthResponse{Success: false, Message: "Error linking phone number"}
-    json.NewEncoder(w).Encode(response)
-    log.Printf("error linking phone number %v", err);
-    return
-  }
-
-  response := AuthResponse{
-    Success: true,
-    Message: "Phone number linked successfully",
   }
   json.NewEncoder(w).Encode(response)
 }

@@ -13,7 +13,7 @@ enter this code %s on our registration screen.`
 func SendRegistrationEmail(to, code string) error {
 	smtpHost := "smtp.protonmail.ch"
 	smtpPort := "587"
-	username := "info@possohelp.com"
+	username := "info@zapmanejo.com"
 	password := os.Getenv("SMTP_PASSWORD")
 
 	from := username

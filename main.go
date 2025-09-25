@@ -89,7 +89,6 @@ func main() {
 
   userRouter := r.PathPrefix("/api/user").Subrouter()
   userRouter.Use(AuthMiddleware) 
-  userRouter.HandleFunc("/phonenumber", HandleLinkPhoneNumber).Methods("POST")
   userRouter.HandleFunc("", HandleGetUser).Methods("GET")
 
   // Serve static files from the "static" directory
