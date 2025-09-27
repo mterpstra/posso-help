@@ -12,6 +12,8 @@ import (
   "posso-help/internal/db"
   "posso-help/internal/user"
   "github.com/gorilla/mux"
+
+  "go.mongodb.org/mongo-driver/mongo"
 )
 
 func HandleDownload(w http.ResponseWriter, r *http.Request) {
@@ -144,7 +146,12 @@ func HandleDataPost(w http.ResponseWriter, r *http.Request) {
 
   _, err = collection.InsertOne(context.TODO(), data)
   if err != nil {
-    http.Error(w, "Error Inserting Data", http.StatusBadRequest)
+
+    if mongo.IsDuplicateKeyError(err) {
+      http.Error(w, "duplicate_key_error", http.StatusBadRequest)
+    } else {
+      http.Error(w, "Error Inserting Data", http.StatusBadRequest)
+    }
     log.Printf("Error Inserting Data: %v", err)
     return 
   }
