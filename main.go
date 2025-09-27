@@ -81,6 +81,7 @@ func main() {
   dataRouter.Use(AuthMiddleware) 
   dataRouter.HandleFunc("/{datatype}", HandleDataGet).Methods("GET")
   dataRouter.HandleFunc("/{datatype}", HandleDataPost).Methods("POST")
+  dataRouter.HandleFunc("/{datatype}/{id}", HandleDataDelete).Methods("DELETE")
 
   // Download routes
   downloadRouter := r.PathPrefix("/api/download").Subrouter()

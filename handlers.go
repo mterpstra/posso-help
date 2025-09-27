@@ -13,7 +13,9 @@ import (
   "posso-help/internal/user"
   "github.com/gorilla/mux"
 
+  "go.mongodb.org/mongo-driver/bson"
   "go.mongodb.org/mongo-driver/mongo"
+  "go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 func HandleDownload(w http.ResponseWriter, r *http.Request) {
@@ -158,6 +160,37 @@ func HandleDataPost(w http.ResponseWriter, r *http.Request) {
   
   return 
 }
+
+func HandleDataDelete(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	datatype := vars["datatype"]
+	id := vars["id"]
+  collection := db.GetCollection(datatype);
+  log.Printf("Deleteing:  datatype: %s, id: %s", datatype, id)
+
+
+  objID, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+    http.Error(w, "invalid_id", http.StatusBadRequest)
+    log.Printf("invalid id: %s %v", id, err)
+    return
+	}
+
+	filter := bson.M{"_id": objID}
+	deleteResult, err := collection.DeleteOne(context.TODO(), filter)
+	if err != nil {
+		log.Fatal(err)
+    http.Error(w, "error_deleting_id", http.StatusBadRequest)
+    log.Printf("Error Deleting ID: %s %v", id, err)
+    return
+	}
+  log.Printf("Number of records deleted: %d by filter %v", 
+             deleteResult.DeletedCount, filter)
+  return 
+}
+
+
+
 
 func HandleChatMessage(w http.ResponseWriter, r *http.Request) {
   log.Printf("HandleChatMessage")
