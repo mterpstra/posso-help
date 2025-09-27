@@ -110,10 +110,13 @@ func (e Entry) Process() error {
         log.Printf("WARNING: Could not find account for %s\n", message.From)
       }
 
-      err = birthMessageParser.AreaParser.LoadAreasByAccount(account)
+      areaParser := &area.AreaParser{}
+      err = areaParser.LoadAreasByAccount(account)
       if err != nil {
         log.Printf("WARNING: Could not load areas from account: %v\n", account)
       } 
+      birthMessageParser.AreaParser = areaParser
+      deathMessageParser.AreaParser = areaParser
 
       baseMessageValues := &BaseMessageValues {
         Account      : account,
