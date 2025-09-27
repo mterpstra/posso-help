@@ -392,6 +392,12 @@ func HandleEmailVerification(w http.ResponseWriter, r *http.Request) {
     return 
   }
 
+  // Update the users with account number
+  users := db.GetCollection("users")
+  filter := bson.M{"email":user.Email}
+  update := bson.M{"$set": bson.M{"account": user.ID.Hex()}}
+  users.UpdateOne(context.TODO(), filter, update)
+
   // Clear password from response
   user.Password = ""
 
