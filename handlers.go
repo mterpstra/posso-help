@@ -144,8 +144,8 @@ func HandleDataPost(w http.ResponseWriter, r *http.Request) {
 
   _, err = collection.InsertOne(context.TODO(), data)
   if err != nil {
-    http.Error(w, "Error Inserting Temperature", http.StatusBadRequest)
-    log.Printf("Error Inserting Temperature: %v", err)
+    http.Error(w, "Error Inserting Data", http.StatusBadRequest)
+    log.Printf("Error Inserting Data: %v", err)
     return 
   }
   

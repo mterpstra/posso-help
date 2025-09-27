@@ -379,6 +379,19 @@ func HandleEmailVerification(w http.ResponseWriter, r *http.Request) {
     return
   }
 
+  // A new member is always a member of his own team
+  collection := db.GetCollection("teams");
+  data := map[string]string{
+    "account": user.ID.Hex(),
+    "name":  user.Name,
+    "phone_number":  user.PhoneNumber, 
+  }
+  _, err = collection.InsertOne(context.TODO(), data)
+  if err != nil {
+    log.Printf("Error Inserting teams: %v", err)
+    return 
+  }
+
   // Clear password from response
   user.Password = ""
 
