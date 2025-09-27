@@ -30,6 +30,8 @@ func (ap *AreaParser) LoadAreasByAccount(account string) error {
 			log.Printf("Error decoding document: %v", err)
 			continue 
 		}
+    log.Printf("LoadAreasByAccount(%s): %s  %s", 
+                account, area.Name, area.Matches)
 		ap.areas = append(ap.areas, area)
 	}
 

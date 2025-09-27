@@ -8,10 +8,9 @@ import (
 
 // Area
 type Area struct {
-  Name string     `bson:"area_name"`
+  Name string     `bson:"name"`
   Matches string  `bson:"matches"`
 }
-
 
 func AddArea(account, name, matches string) error {
   data := make(map[string]interface{})
