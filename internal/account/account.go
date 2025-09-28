@@ -18,15 +18,19 @@ func getAllPhoneNumberVariants(phoneNumber string) ([]string) {
   variants := []string{}
   variants = append(variants, phoneNumber);
 
-  // 16166100305 -> 616-610-0305
+  // 16166100305 -> 1-616-610-0305
   if (len(phoneNumber)==11) {
-    tmp := fmt.Sprintf("%s-%s-%s", phoneNumber[1:4], phoneNumber[4:7], phoneNumber[7:11])
+    tmp := fmt.Sprintf("%s-%s-%s-%s", 
+                        phoneNumber[0:1], phoneNumber[1:4], 
+                        phoneNumber[4:7], phoneNumber[7:11])
     variants = append(variants, tmp);
   }
 
-  // 12123451234 -> 12-12345-1234
-  if (len(phoneNumber)==11) {
-    tmp := fmt.Sprintf("%s-%s-%s", phoneNumber[0:2], phoneNumber[2:7], phoneNumber[7:11])
+  // 5512123451234 -> 55-12-12345-1234
+  if (len(phoneNumber)==13) {
+    tmp := fmt.Sprintf("%s-%s-%s-%s", 
+                       phoneNumber[0:2], phoneNumber[2:4], 
+                       phoneNumber[4:9], phoneNumber[9:13])
     variants = append(variants, tmp);
   }
 
