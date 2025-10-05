@@ -34,3 +34,20 @@ func Read(Id string) (*User, error) {
   }
   return user, nil
 }
+
+func (u *User) GetDisplayName() string {
+
+  if (u.Name != "") {
+    return u.Name
+  }
+
+  if (u.Username != "") {
+    return u.Username
+  }
+
+  if (u.Email != "") {
+    return u.Email
+  }
+
+  return u.ID.Hex()
+}

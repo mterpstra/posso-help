@@ -145,6 +145,7 @@ func HandleDataPost(w http.ResponseWriter, r *http.Request) {
 
   // Use the users user id as the account number for now
   data["account"] = u.ID.Hex()
+  data["name"] = u.GetDisplayName()
 
   _, err = collection.InsertOne(context.TODO(), data)
   if err != nil {
