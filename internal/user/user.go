@@ -18,6 +18,7 @@ type User struct {
   CreatedAt   time.Time          `json:"created_at"`
   UpdatedAt   time.Time          `json:"updated_at"`
   IsActive    bool               `bson:"is_active" json:"is_active"`
+  Language    string             `bson:"lang" json:"lang"`
 }
 
 func Read(Id string) (*User, error) {
