@@ -15,8 +15,6 @@ import (
 const REPLY_DEATHS = `Zap Manejo has detected death data.  We added %d deaths to area %s. To claim your data and see a report sign up at https://dashboard.zapmanejo.com/`
 
 type Death struct {
-  EntryId     string `json:"entry_id"`
-  MessageId   string `json:"message_id"`
   Phone       string `json:"phone"`
   Name        string `json:"name"`
   Date        string `json:"date"`
