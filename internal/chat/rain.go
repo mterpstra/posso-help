@@ -33,6 +33,10 @@ type RainMessage struct {
   Total int
 }
 
+func (b *RainMessage) GetCollection() string {
+  return "rain"
+}
+
 // RainMessage returns an array of rain entries
 func (r *RainMessage) Parse(message string) bool {
   found := false

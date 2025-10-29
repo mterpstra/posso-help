@@ -26,6 +26,7 @@ type Death struct {
 
 type DeathEntry struct {
   Id       int    `json:"tag"`
+  Breed    string `json:"breed"`
   Sex      string `json:"sex"`
   Cause    string `json:"cause"`
 }
@@ -36,6 +37,10 @@ type DeathMessage struct {
   Area *area.Area
   AreaParser *area.AreaParser
   Total int
+}
+
+func (b *DeathMessage) GetCollection() string {
+  return "death"
 }
 
 func (d *DeathMessage) Parse(message string) bool {
@@ -63,11 +68,21 @@ func (d *DeathMessage) Parse(message string) bool {
 
 func (d *DeathMessage) parseAsDeathLine(line string) (*DeathEntry) {
   var num int
-  var sex, cause string
+  var sex, cause, breed string
   line = utils.SanitizeLine(line)
 
+  // Death Line with tag, sex, breed, cause: 2235 F angus natimorto
+  
+  n, err := fmt.Sscanf(line, "%d %s %s %s", &num, &sex, &breed, &cause)
+  if err == nil && n == 4 && num > 0   &&
+    utils.StringIsOneOf(sex, SEXES)    && 
+    utils.StringIsOneOf(cause, DEATHS) &&
+    utils.StringIsOneOf(breed, BREEDS) {
+      return &DeathEntry{Id:num, Sex:sex, Cause:cause, Breed: breed}
+  }
+
   // Death Line with Sex
-  n, err := fmt.Sscanf(line, "%d %s %s", &num, &sex, &cause)
+  n, err = fmt.Sscanf(line, "%d %s %s", &num, &sex, &cause)
   if err == nil && n == 3 && num > 0 &&
     (utils.StringIsOneOf(sex, SEXES)) && (utils.StringIsOneOf(cause, DEATHS)) {
       return &DeathEntry{Id:num, Sex:sex, Cause:cause}
@@ -95,6 +110,7 @@ func (d *DeathMessage) Insert(bmv *BaseMessageValues) error {
     document = append(document, bson.E{Key: "tag", Value: death.Id})
     document = append(document, bson.E{Key: "sex", Value: death.Sex})
     document = append(document, bson.E{Key: "cause", Value: death.Cause})
+    document = append(document, bson.E{Key: "breed", Value: death.Breed})
     document = append(document, bson.E{Key: "area", Value: d.Area.Name})
 
     // If the message text has a date, use it over the message date

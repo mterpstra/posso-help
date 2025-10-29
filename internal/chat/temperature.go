@@ -36,6 +36,10 @@ type TemperatureMessage struct {
   Area *area.Area
 }
 
+func (b *TemperatureMessage) GetCollection() string {
+  return "temperature"
+}
+
 // ParseTemperatureMessage returns a parsed Temperaturemessage
 func (t *TemperatureMessage) Parse(message string) bool {
   found := false

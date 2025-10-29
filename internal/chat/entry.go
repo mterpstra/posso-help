@@ -59,6 +59,7 @@ type Text struct {
 }
 
 type Parser interface {
+  GetCollection() string
   Parse(string) bool 
   Text() string
   Insert(*BaseMessageValues) error
@@ -74,18 +75,19 @@ func ProcessEntries(entries []Entry) error {
 func (e Entry) Process() error {
 
   birthMessageParser := &BirthMessage{
-    AreaParser: &area.AreaParser{},
+    //AreaParser: &area.AreaParser{},
   }
   deathMessageParser := &DeathMessage{
-    AreaParser: &area.AreaParser{},
+    //AreaParser: &area.AreaParser{},
   }
 
-  parsers := make(map[string]Parser)
-  parsers["birth"] = birthMessageParser
-  parsers["death"] = deathMessageParser
-  parsers["rain"] = &RainMessage{}
-  parsers["temperature"] = &TemperatureMessage{}
-  parsers["weather"] = &WeatherMessage{}
+  parsers := []Parser{
+    deathMessageParser,
+    birthMessageParser,
+    &RainMessage{},
+    &TemperatureMessage{},
+    &WeatherMessage{},
+  }
 
   for _, change := range e.Changes {
 
@@ -96,7 +98,7 @@ func (e Entry) Process() error {
 
     for _, message := range change.Value.Messages {
 
-      timestamp, err := strconv.ParseInt(message.Timestamp, 10, 64)
+      timestamp, err := strconv.ParseInt(message.Timestamp, 10, 64) 
       if err != nil {
         now := time.Now()
         timestamp = now.Unix()
@@ -125,10 +127,10 @@ func (e Entry) Process() error {
         Date         : t.Format(time.RFC3339),
       }
 
-      for name, parser := range parsers {
+      for _, parser := range parsers {
         msg := strings.TrimSpace(message.Text.Body)
         if found := parser.Parse(msg); found {
-          log.Printf("message parsed with parser: %v\n", name)
+          log.Printf("message parsed with parser: %v\n", parser.GetCollection())
           if err := parser.Insert(baseMessageValues); err != nil {
             log.Printf("Error insert record into DB: %v\n", err)
           }
@@ -136,6 +138,9 @@ func (e Entry) Process() error {
           if err := text.Send(); err != nil {
             log.Printf("Error during text reply: %v\n", err)
           }
+          // A single message can only be parsed by one parser.
+          // Note, if we ever change this, births is a subset of deaths.
+          break
         }
       }
     }

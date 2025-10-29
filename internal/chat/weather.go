@@ -16,6 +16,10 @@ type WeatherMessage struct {
   weather string
 }
 
+func (b *WeatherMessage) GetCollection() string {
+  return "weather"
+}
+
 func (w *WeatherMessage) Parse(message string) bool {
   found := false
   address := ""

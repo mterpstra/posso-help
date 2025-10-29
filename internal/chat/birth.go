@@ -21,7 +21,7 @@ type Birth struct {
   Name      string `json:"phone"`
   Date      string `json:"date"`
   Tag       int64  `json:"tag" bson:"tag, omitempty"`
-  Pure      bool   `json:"pure_bread"`
+  Pure      bool   `json:"pure_breed"`
   Sex       string `json:"sex"`
   Breed     string `json:"breed"`
   Area      string `json:"area"`
@@ -41,6 +41,10 @@ type BirthMessage struct {
   AreaParser *area.AreaParser
   NewAreaFound bool
   Total int
+}
+
+func (b *BirthMessage) GetCollection() string {
+  return "birth"
 }
 
 func (b *BirthMessage) Parse(message string) bool {
@@ -116,7 +120,7 @@ func (b *BirthMessage) Insert(bmv *BaseMessageValues) error {
   for _, birth := range b.Entries {
     document := bmv.ToMap()
     document = append(document, bson.E{Key: "tag", Value: birth.Id})
-    document = append(document, bson.E{Key: "pure_bread", Value: birth.PureBred})
+    document = append(document, bson.E{Key: "pure_breed", Value: birth.PureBred})
     document = append(document, bson.E{Key: "sex", Value: birth.Sex})
     document = append(document, bson.E{Key: "breed", Value: birth.Breed})
     document = append(document, bson.E{Key: "area", Value: b.Area.Name})

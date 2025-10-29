@@ -96,14 +96,5 @@ func TestHandleEntryRequest(t *testing.T) {
     fmt.Printf("server response: %s\n", string(body))
 
     println("-------------------------------------")
-
-    /*
-    expected := "Mocked response from server"
-    if string(body) != expected {
-      t.Errorf("Expected body %q, got %q", 
-        expected, string(body))
-    }
-    */
-
 	}
 }
