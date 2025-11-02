@@ -15,8 +15,8 @@ type User struct {
   Password    string             `json:"-"` // Excluded from JSON responses
   PhoneNumber string             `bson:"phone_number" json:"phone_number"`
   Name        string             `json:"name"`
-  CreatedAt   time.Time          `json:"created_at"`
-  UpdatedAt   time.Time          `json:"updated_at"`
+  CreatedAt   time.Time          `bson:"created_at" json:"created_at"`
+  UpdatedAt   time.Time          `bson:"updated_at" json:"updated_at"`
   IsActive    bool               `bson:"is_active" json:"is_active"`
   Language    string             `bson:"lang" json:"lang"`
 }

@@ -74,13 +74,8 @@ func ProcessEntries(entries []Entry) error {
 
 func (e Entry) Process() error {
 
-  birthMessageParser := &BirthMessage{
-    //AreaParser: &area.AreaParser{},
-  }
-  deathMessageParser := &DeathMessage{
-    //AreaParser: &area.AreaParser{},
-  }
-
+  birthMessageParser := &BirthMessage{}
+  deathMessageParser := &DeathMessage{}
   parsers := []Parser{
     deathMessageParser,
     birthMessageParser,
@@ -107,21 +102,28 @@ func (e Entry) Process() error {
       unixTimestamp := int64(timestamp)
       t := time.Unix(unixTimestamp, 0)
 
-      account, err := account.FindAccountByPhoneNumber(message.From)
+      team, err := account.FindAccountByPhoneNumber(message.From)
       if (err != nil) {
         log.Printf("WARNING: Could not find account for %s\n", message.From)
+      } else {
+        if len(team.Name) > 0 {
+          name = team.Name
+        }
+        if len(team.PhoneNumber) > 0 {
+          message.From = team.PhoneNumber
+        }
       }
 
       areaParser := &area.AreaParser{}
-      err = areaParser.LoadAreasByAccount(account)
+      err = areaParser.LoadAreasByAccount(team.Account)
       if err != nil {
-        log.Printf("WARNING: Could not load areas from account: %v\n", account)
+        log.Printf("WARNING: Could not load areas from account: %v\n", team.Account)
       } 
       birthMessageParser.AreaParser = areaParser
       deathMessageParser.AreaParser = areaParser
 
       baseMessageValues := &BaseMessageValues {
-        Account      : account,
+        Account      : team.Account,
         PhoneNumber  : message.From,
         Name         : name,
         Date         : t.Format(time.RFC3339),

@@ -37,7 +37,7 @@ func getAllPhoneNumberVariants(phoneNumber string) ([]string) {
   return variants;
 }
 
-func FindAccountByPhoneNumber(phoneNumber string) (string, error) {
+func FindAccountByPhoneNumber(phoneNumber string) (*Team, error) {
   teams := db.GetCollection("teams")
   variants := getAllPhoneNumberVariants(phoneNumber)
   log.Printf("PhoneNumber: %s,  Variants: %v", phoneNumber, variants)
@@ -46,5 +46,5 @@ func FindAccountByPhoneNumber(phoneNumber string) (string, error) {
   err := teams.FindOne(context.TODO(), filter).Decode(team)
   log.Printf("FindAccountByPhoneNumber(%s):  returned %s:  %v", 
              phoneNumber, team.Account, err)
-  return team.Account, err
+  return team, err
 }
