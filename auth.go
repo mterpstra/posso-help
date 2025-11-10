@@ -259,7 +259,20 @@ func HandleAuthRegister(w http.ResponseWriter, r *http.Request) {
     return
   }
 
-  // Send verification email using Mark's existing email system
+  // Special testing email domain.
+  // @todo: make this an environment variable
+	if strings.Contains(req.Email, "zapmanejo.test") {
+    log.Printf("test email detected, skipping sending email registration")
+    response := AuthResponse{
+      Success: true,
+      Message: "Registration successful. Please check your email for verification code.",
+      User:    &user,
+      VerificationCode: verificationCode,
+    }
+    json.NewEncoder(w).Encode(response)
+    return
+  }
+
   err = email.SendRegistrationEmail(req.Email, verificationCode)
   if err != nil {
     response := AuthResponse{Success: false, Message: "Error sending verification email"}
@@ -272,7 +285,6 @@ func HandleAuthRegister(w http.ResponseWriter, r *http.Request) {
     Success: true,
     Message: "Registration successful. Please check your email for verification code.",
     User:    &user,
-    VerificationCode: verificationCode, // For testing purposes
   }
   json.NewEncoder(w).Encode(response)
 }
