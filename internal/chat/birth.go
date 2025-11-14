@@ -12,8 +12,6 @@ import (
   "go.mongodb.org/mongo-driver/bson"
 )
 
-const REPLY_BIRTHS = `Zap Manejo has detected birth data.  We added %d births to area %s. To claim your data and see a report sign up at https://dashboard.zapmanejo.com/`
-
 type Birth struct {
   EntryId   string `json:"entry_id"`
   MessageId string `json:"message_id"`
@@ -110,8 +108,24 @@ func (b *BirthMessage) parseAsBirthLine(line string) (*BirthEntry) {
   return nil
 }
 
-func (b *BirthMessage) Text() string {
-  return fmt.Sprintf(REPLY_BIRTHS, b.Total, b.Area.Name)
+func (b *BirthMessage) Text(lang string) string {
+  reply := map[string]string {
+    "en-US" : "Zap Manejo has detected birth data. " +
+              "We added %d births to area %s. "      + 
+              "To claim your data and see a report " + 
+              "sign up at https://dashboard.zapmanejo.com/",
+    "pt-BR" : "Zap Manejo detectou dados de nascimento. "               + 
+              "Adicionamos %d nascimentos à área %s. "                  + 
+              "Para reivindicar seus dados e visualizar um relatório, " + 
+              "cadastre-se em https://dashboard.zapmanejo.com/",
+  }
+
+  if lang == "pt-BR" ||  lang == "en-US" {
+    return fmt.Sprintf(reply[lang], b.Total, b.Area.Name)
+  }
+
+  log.Printf("Unsupported or Unknown Language: (%s)", lang)
+  return fmt.Sprintf(reply["pt-BR"], b.Total, b.Area.Name)
 }
 
 func (b *BirthMessage) Insert(bmv *BaseMessageValues) error {

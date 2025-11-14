@@ -2,6 +2,7 @@ package chat
 
 import (
   "fmt"
+  "log"
   "strings"
   "context"
   "posso-help/internal/area"
@@ -78,8 +79,23 @@ func (t *TemperatureMessage) parseTemperatureLine(line string) (*TemperatureEntr
   return nil
 }
 
-func (r *TemperatureMessage) Text() string {
-  return fmt.Sprintf(REPLY_TEMPERATURE, len(r.Entries))
+func (r *TemperatureMessage) Text(lang string) string {
+  reply := map[string]string {
+    "en-US" : "Zap Manejo has detected temperature data.  "                  + 
+              "We added %d days of temperature data.  To claim your data "   + 
+              "and see a report sign up at https://dashboard.zapmanejo.com/",
+    "pt-BR" : "Zap Manejo detectou dados de temperatura. Adicionamos dados " +
+              "de temperatura dos últimos %d dias. Para reivindicar seus "   +
+              "dados e visualizar um relatório, cadastre-se em "             +
+              "https://dashboard.zapmanejo.com/",
+  }
+
+  if lang == "pt-BR" ||  lang == "en-US" {
+    return fmt.Sprintf(reply[lang], len(r.Entries))
+  }
+
+  log.Printf("Unsupported or Unknown Language: (%s)", lang)
+  return fmt.Sprintf(reply["pt-BR"], len(r.Entries))
 }
 
 func (b *TemperatureMessage) Insert(bmv *BaseMessageValues) error {

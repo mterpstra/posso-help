@@ -12,8 +12,6 @@ import (
   "go.mongodb.org/mongo-driver/bson"
 )
 
-const REPLY_DEATHS = `Zap Manejo has detected death data.  We added %d deaths to area %s. To claim your data and see a report sign up at https://dashboard.zapmanejo.com/`
-
 type Death struct {
   Phone       string `json:"phone"`
   Name        string `json:"name"`
@@ -98,8 +96,24 @@ func (d *DeathMessage) parseAsDeathLine(line string) (*DeathEntry) {
   return nil
 }
 
-func (d *DeathMessage) Text() string {
-  return fmt.Sprintf(REPLY_DEATHS, d.Total, d.Area.Name)
+func (d *DeathMessage) Text(lang string) string {
+  reply := map[string]string {
+    "en-US" : "Zap Manejo has detected death data. " +  
+              "We added %d deaths to area %s. "      + 
+              "To claim your data and see a report " + 
+              "sign up at https://dashboard.zapmanejo.com/",
+    "pt-BR" : "Zap Manejo detectou dados de óbitos. "     + 
+              "Adicionamos %d  óbitos à área %s. "        + 
+              "Para reivindicar seus dados e visualizar " + 
+              "um relatório, cadastre-se em https://dashboard.zapmanejo.com/",
+  }
+
+  if lang == "pt-BR" ||  lang == "en-US" {
+    return fmt.Sprintf(reply[lang], d.Total, d.Area.Name)
+  }
+
+  log.Printf("Unsupported or Unknown Language: (%s)", lang)
+  return fmt.Sprintf(reply["pt-BR"], d.Total, d.Area.Name)
 }
 
 func (d *DeathMessage) Insert(bmv *BaseMessageValues) error {

@@ -12,6 +12,7 @@ type Team struct {
   Account      string `bson:"account"`
   PhoneNumber  string `bson:"phone_number"`
   Name         string `bson:"name"`
+  Language     string `bson:"lang"`
 }
 
 func getAllPhoneNumberVariants(phoneNumber string) ([]string) {

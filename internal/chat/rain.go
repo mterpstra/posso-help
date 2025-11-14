@@ -2,6 +2,7 @@ package chat
 
 import (
   "fmt"
+  "log"
   "strings"
   "context"
   "posso-help/internal/area"  
@@ -10,8 +11,6 @@ import (
   "posso-help/internal/utils"  
   "go.mongodb.org/mongo-driver/bson"
 )
-
-const REPLY_RAINFALL = `Zap Manejo has detected rainfall data.  We added %d mm of rain. To claim your data and see a report sign up at https://dashboard.zapmanejo.com/`
 
 type Rain struct {
   EntryId   string `json:"entry_id"`
@@ -68,8 +67,22 @@ func (r *RainMessage) parseRainLine(line string) (*RainEntry) {
   return nil
 }
 
-func (r *RainMessage) Text() string {
-  return fmt.Sprintf(REPLY_RAINFALL, r.Total)
+func (r *RainMessage) Text(lang string) string {
+  reply := map[string]string {
+    "en-US" : "Zap Manejo has detected rainfall data.  "        + 
+              "We added %d mm of rain. To claim your data and " + 
+              "see a report sign up at https://dashboard.zapmanejo.com/",
+    "pt-BR" : "Zap Manejo detectou dados de precipitação. "                + 
+              "Adicionamos %d  mm de chuva.  Para reivindicar seus dados " +
+              "e ver um relatório, inscreva-se em https://dashboard.zapmanejo.com/",
+  }
+
+  if lang == "pt-BR" ||  lang == "en-US" {
+    return fmt.Sprintf(reply[lang], r.Total)
+  }
+
+  log.Printf("Unsupported or Unknown Language: (%s)", lang)
+  return fmt.Sprintf(reply["pt-BR"], r.Total)
 }
 
 func (b *RainMessage) Insert(bmv *BaseMessageValues) error {

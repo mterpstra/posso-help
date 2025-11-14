@@ -61,7 +61,7 @@ type Text struct {
 type Parser interface {
   GetCollection() string
   Parse(string) bool 
-  Text() string
+  Text(string) string
   Insert(*BaseMessageValues) error
 }
 
@@ -136,7 +136,7 @@ func (e Entry) Process() error {
           if err := parser.Insert(baseMessageValues); err != nil {
             log.Printf("Error insert record into DB: %v\n", err)
           }
-          text := textmsg.NewMessageSender(message.From, parser.Text())
+          text := textmsg.NewMessageSender(message.From, parser.Text(team.Language))
           if err := text.Send(); err != nil {
             log.Printf("Error during text reply: %v\n", err)
           }

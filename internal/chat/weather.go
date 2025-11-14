@@ -2,13 +2,11 @@ package chat
 
 import (
   "fmt"
+  "log"
   "strings"
-
   "posso-help/internal/utils"
   "posso-help/internal/weather"
 )
-
-const REPLY_WEATHER = "Posso Help Weather:\n%s"
 
 type WeatherMessage struct {
   searchAddress string
@@ -53,8 +51,18 @@ func (w *WeatherMessage) Parse(message string) bool {
   return found 
 }
 
-func (w *WeatherMessage) Text() string {
-  return fmt.Sprintf(REPLY_WEATHER, w.weather)
+func (w *WeatherMessage) Text(lang string) string {
+  reply := map[string]string {
+    "en-US":"Posso Help Weather:\n%s",
+    "pt-BR":"Posso Help Clima:\n%s",
+  }
+
+  if lang == "pt-BR" ||  lang == "en-US" {
+    return fmt.Sprintf(reply[lang], w.weather)
+  }
+
+  log.Printf("Unsupported or Unknown Language: (%s)", lang)
+  return fmt.Sprintf(reply["pt-BR"], w.weather)
 }
 
 // Acrtually gets the weather for the passed address
