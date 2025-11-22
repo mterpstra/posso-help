@@ -123,13 +123,17 @@ func HandleUpload(w http.ResponseWriter, r *http.Request) {
         key := strings.TrimSpace(header)
         value := strings.TrimSpace(row[i])
         record[key] = value
-        // Hack for tag being an int value
-        if key == "tag" {
+
+        // Hack for tag being an int values
+        if key == "tag" || key == "amount" || key == "temperature" {
           tag, err := strconv.Atoi(value)
           if err == nil {
             record[key] = tag 
           }
         }
+
+
+
 			}
 		}
     log.Printf("record: %+v\n", record)

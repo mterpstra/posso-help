@@ -20,7 +20,7 @@ func TestCapitalizeString(t *testing.T) {
 }
 
 func TestSplitAndTrim(t *testing.T) {
-  parts := SplitAndTrim("  zero , one , two ")
+  parts := SplitAndTrim("  zero ; one ; two ")
   assert.Equal(t, "zero", parts[0], "part 0 is wrong")
   assert.Equal(t, "one",  parts[1], "part 1 is wrong")
   assert.Equal(t, "two",  parts[2], "part 2 is wrong")
