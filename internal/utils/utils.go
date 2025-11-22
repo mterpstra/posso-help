@@ -38,7 +38,10 @@ func SplitAndTrim(str string) []string {
   // Need to split with simi-colon as comma's mess up CSV upload
   parts := strings.Split(str, ";")
   for i, part := range parts {
-    parts[i] = strings.TrimSpace(part)
+    part = strings.TrimSpace(part)
+    if len(part) > 0 {
+      parts[i] = part
+    }
   }
   return parts
 }
