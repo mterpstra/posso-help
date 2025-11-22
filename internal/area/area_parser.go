@@ -40,9 +40,12 @@ func (ap *AreaParser) LoadAreasByAccount(account string) error {
 
 func (ap *AreaParser) ParseAsAreaLine(line string) (string, bool) {
   line = utils.SanitizeLine(line)
+  log.Printf("ParseAsAreaLine: line=%+v\n", line)
   for _, area := range ap.areas {
     matches := utils.SplitAndTrim(strings.ToLower(area.Matches))
+    log.Printf("ParseAsAreaLine: matches=%+v\n", matches)
     if utils.StringContainsOneOf(line, matches) {
+      log.Printf("ParseAsAreaLine: found, name=%+v\n", area.Name)
       return area.Name, true
     }
   }
