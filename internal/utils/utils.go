@@ -35,7 +35,8 @@ func Capitalize(str string) string {
 }
 
 func SplitAndTrim(str string) []string {
-  parts := strings.Split(str, ",")
+  // Need to split with simi-colon as comma's mess up CSV upload
+  parts := strings.Split(str, ";")
   for i, part := range parts {
     parts[i] = strings.TrimSpace(part)
   }

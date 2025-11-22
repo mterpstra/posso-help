@@ -5,9 +5,11 @@ import (
   "log"
   "fmt"
   "net/http"
+  "encoding/csv"
   "encoding/json"
   "context"
   "strconv"
+  "strings"
   "posso-help/internal/chat"
   "posso-help/internal/db"
   "posso-help/internal/user"
@@ -63,6 +65,87 @@ func HandleDownload(w http.ResponseWriter, r *http.Request) {
 }
 
 func HandleUpload(w http.ResponseWriter, r *http.Request) {
+  log.Printf("Handle Upload")
+
+	vars := mux.Vars(r)
+	datatype := vars["datatype"]
+  log.Printf("HandleUpload: %s", datatype)
+  ctx := r.Context()
+  userID := ctx.Value("user_id")
+  if userID == nil {
+    log.Printf("could not get userid from context")
+    http.Error(w, "Authorization header required", http.StatusUnauthorized)
+    return
+  }
+  u, err := user.Read(userID.(string))
+  if err != nil {
+    log.Printf("could not read userID from context")
+    http.Error(w, "User Not Found", http.StatusNotFound)
+    return
+  }
+
+  // The name "csvfile" should match the 'name' attribute in the HTML form's input tag.
+	file, handler, err := r.FormFile("csvFile")
+	if err != nil {
+		http.Error(w, "Error retrieving the file", http.StatusBadRequest)
+		log.Println(err)
+		return
+	}
+	defer file.Close()
+
+	log.Printf("Uploaded File: %+v\n", handler.Filename)
+	log.Printf("File Size: %+v\n", handler.Size)
+	log.Printf("MIME Header: %+v\n", handler.Header)
+
+	csvReader := csv.NewReader(file)
+	headers, err := csvReader.Read()
+	if err != nil {
+		http.Error(w, "Error reading CSV header", http.StatusInternalServerError)
+		log.Println(err)
+		return
+	}
+  fieldCount := len(headers)
+	log.Printf("Field Count: %+v\n", fieldCount)
+  record := bson.M{"account": u.ID.Hex()}
+  collection := db.GetCollection(datatype);
+	for {
+		row, err := csvReader.Read()
+		if err == io.EOF {
+			break 
+		}
+		if err != nil {
+			fmt.Printf("Error reading row: %v\n", err)
+			return
+		}
+
+		for i, header := range headers {
+			if i < len(row) { // Ensure index is within bounds of the row
+        key := strings.TrimSpace(header)
+        value := strings.TrimSpace(row[i])
+        record[key] = value
+
+        // Hack for tag being an int values
+        if key == "tag" || key == "amount" || key == "temperature" {
+          tag, err := strconv.Atoi(value)
+          if err == nil {
+            record[key] = tag 
+          }
+        }
+
+
+
+			}
+		}
+    log.Printf("record: %+v\n", record)
+    result, err := collection.InsertOne(context.TODO(), record)
+    if err != nil {
+      log.Printf("Error inserting %s record: %+v, err: %v", 
+      datatype, record, err)
+    }
+    log.Printf("result: %+v\n", result)
+
+	}
+
 }
 
 func HandleDataGet(w http.ResponseWriter, r *http.Request) {
@@ -246,9 +329,6 @@ func HandleDataDelete(w http.ResponseWriter, r *http.Request) {
              deleteResult.DeletedCount, filter)
   return 
 }
-
-
-
 
 func HandleChatMessage(w http.ResponseWriter, r *http.Request) {
   log.Printf("HandleChatMessage")
