@@ -1,6 +1,7 @@
 package utils
 
 import (
+  "log"
   "strings"
 )
 
@@ -36,12 +37,14 @@ func Capitalize(str string) string {
 
 func SplitAndTrim(str string) []string {
   // Need to split with simi-colon as comma's mess up CSV upload
-  parts := strings.Split(str, ";")
-  for i, part := range parts {
+  log.Printf("SplitAndTrim(%s)", str)
+  parts := []string{}
+  for _, part := range strings.Split(str, ";") {
     part = strings.TrimSpace(part)
     if len(part) > 0 {
-      parts[i] = part
+      parts = append(parts, part)
     }
   }
+  log.Printf("SplitAndTrim(%s): [%+v] len: %d", str, parts, len(parts))
   return parts
 }
