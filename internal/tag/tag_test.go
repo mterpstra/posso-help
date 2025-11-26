@@ -110,3 +110,30 @@ func TestLine(t *testing.T) {
                  fmt.Sprintf("test: %d", index))
   }
 }
+
+func TestDate(t *testing.T) {
+  date := NewDate()
+
+  tests := []struct {
+    Input string
+    Result string
+  }{
+    {"2025/12/02",  "2025-12-02"},
+    {"2025/12/2",   "2025-12-02"},
+    {"2025-7-05",   "2025-07-05"},
+    {"something before 2025/7/1 and after", "2025-07-01"},
+
+    //DD/MM
+    {"25/12",       "2025-12-25"},
+    {"5/8",         "2025-08-05"},
+
+    // Invalids
+    {"2025/13/02",  ""},
+    {"32/02",       ""},
+  }
+  for index, test := range tests {
+    assert.Equal(t, test.Result, 
+                 date.Parse(test.Input), 
+                 fmt.Sprintf("test: %d", index))
+  }
+}
