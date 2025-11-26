@@ -25,10 +25,10 @@ func TestDeathMessage(t *testing.T) {
 func TestParseAsDeathLine(t *testing.T) {
   dm := &DeathMessage{}
   tests := []DeathTest {
-    DeathTest{"2235 F natimorto", true, &DeathEntry{2235, FEMALE, NATIMORTO}},
-    DeathTest{"2236 Aborto",      true, &DeathEntry{2236, "",     ABORTO}},
-    DeathTest{"1225 Morreu",      true, &DeathEntry{1225, "",     MORREU}},
-    DeathTest{"1226 Morto",       true, &DeathEntry{1226, "",     MORTO}},
+    DeathTest{"2235 F natimorto", true, &DeathEntry{2235, "breed", FEMALE, NATIMORTO}},
+    DeathTest{"2236 Aborto",      true, &DeathEntry{2236, "breed", "",     ABORTO}},
+    DeathTest{"1225 Morreu",      true, &DeathEntry{1225, "breed", "",     MORREU}},
+    DeathTest{"1226 Morto",       true, &DeathEntry{1226, "breed", "",     MORTO}},
   }
 
   for index, test := range tests {

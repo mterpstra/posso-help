@@ -2,7 +2,7 @@ package chat
 
 import (
   "testing"
-  "sample/hello/internal/area"
+  "posso-help/internal/area"
   "github.com/stretchr/testify/assert"
 )
 
@@ -73,6 +73,7 @@ func TestParseBithLine(t *testing.T) {
 
   for index, test := range tests {
     birth := bm.parseAsBirthLine(test.Input)
+    ap := area.AreaParser{}
     area, _ := area.ParseAsAreaLine(test.Input)
     
     // Not supposed to be found, this is good

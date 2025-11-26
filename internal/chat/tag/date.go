@@ -9,6 +9,7 @@ import (
 )
 
 type Date struct {
+  value string
 }
 
 func NewDate() *Date {
@@ -18,12 +19,19 @@ func NewDate() *Date {
 // Parse accepts a string as input and returns a date if one
 // is found.  The date is returned as yyyy-mm-dd
 // Example:  dd/mm => yyyy-mm-dd
-func (d *Date) Parse(text string) string {
+func (d *Date) Parse(text string) bool {
+  d.value = ""
   dateFound := d.findDate(text)
   if dateFound != "" {
-    return dateFound
+    d.value = dateFound
+    return true
   }
-  return d.findDateShort(text)
+  dateFound = d.findDateShort(text)
+  if dateFound != "" {
+    d.value = dateFound
+    return true
+  }
+  return false
 }
 
 func (d *Date) findDateShort(text string) string {
@@ -45,7 +53,6 @@ func (d *Date) findDate(text string) string {
   }
   return d.getFormattedDateIfValid(matches[0])
 }
-
 
 func (d *Date) getFormattedDateIfValid(input string) string {
 	layouts := []string{
@@ -69,4 +76,12 @@ func (d *Date) getFormattedDateIfValid(input string) string {
   }
   log.Printf("Found possible date: %s, but it was not valid", input)
   return ""
+}
+
+func (d *Date) Value() string {
+  return d.value
+}
+
+func (d *Date) ValueAsInt() int {
+  return 0
 }

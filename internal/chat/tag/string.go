@@ -8,6 +8,7 @@ import (
 )
 
 type String struct {
+  found bool
   value string
   variants []string
 }
@@ -19,19 +20,27 @@ func NewString(value string, variants []string) *String{
   }
 }
 
-func (s *String) Parse(text string) string {
+func (s *String) Parse(text string) bool {
   pattern := fmt.Sprintf("\\b(%s)\\b", 
     strings.Join(s.variants, "|"))
 
-  matched, err := regexp.MatchString(pattern, text)
+  var err error
+  s.found, err = regexp.MatchString(pattern, text)
   if err != nil {
     log.Printf("Could not compile regexp for tag: %s", s.variants)
-    return ""
+    return false
   }
 
-  if (!matched) {
-    return ""
-  }
+  return s.found
+}
 
-  return s.value
+func (s *String) Value() string {
+  if s.found {
+    return s.value
+  }
+  return ""
+}
+
+func (s *String) ValueAsInt() int {
+  return 0
 }
