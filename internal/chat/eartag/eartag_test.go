@@ -16,6 +16,7 @@ type TestCase struct {
 func TestEarTag(t *testing.T) {
   ear := New()
   tests := []TestCase{
+    {"333",                true,  "333",        333},
     {"4444",               true,  "4444",      4444},
     {"88888888",           true,  "88888888",  88888888},
     {" 666666 ",           true,  "666666",    666666},

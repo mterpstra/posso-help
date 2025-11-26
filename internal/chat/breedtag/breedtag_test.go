@@ -16,12 +16,14 @@ type TestCase struct {
 func TestBreedTag(t *testing.T) {
   breed := New()
   tests := []TestCase{
-    {"nelore",             true, "nelore", 0},
-    {"nalore",             true, "nelore", 0},
-    {"angus",              true, "angus",  0},
-    {"data nelore around", true, "nelore", 0},
-    {"data nalore around", true, "nelore", 0},
-    {"data angus around",  true, "angus", 0},
+    {"nelore",             true, "nelore",    0},
+    {"nalore",             true, "nelore",    0},
+    {"angus",              true, "angus",     0},
+    {"data nelore around", true, "nelore",    0},
+    {"data nalore around", true, "nelore",    0},
+    {"data angus around",  true, "angus",     0},
+    {"sta.zelia",          true, "sta.zelia", 0},
+    {"sta. zelia",         true, "sta.zelia", 0},
   }
   for index, test := range tests {
     found := breed.Parse(test.Input)

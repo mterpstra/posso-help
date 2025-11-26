@@ -18,8 +18,8 @@ func TestWeatherMessage(t *testing.T) {
     println("testing", test)
     assert.True(t, wm.Parse(test), "Could not parse weather message")
     assert.Nil(t, wm.Insert(bmv),  "Could not insert weather message")
-    assert.Contains(t, wm.Text(), "Celsius", "Expected string to contain 'celcius'")
-    println(wm.Text())
+    assert.Contains(t, wm.Text("en-US"), "Celsius", "Expected string to contain 'celcius'")
+    println(wm.Text("en-US"))
   }
 
 }

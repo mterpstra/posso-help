@@ -27,18 +27,15 @@ func (l *LineParser) CanHave(name string, tagParser tag.Tag) *LineParser {
 }
 
 func (l *LineParser) Parse(text string) bool {
-
   for _, tag := range l.mustHave {
     found := tag.Parse(text)
     if !found {
       return false  
     }
   }
-
   for _, tag := range l.canHave {
     tag.Parse(text)
   }
-
   return true
 }
 

@@ -5,5 +5,5 @@ import (
 )
 
 func New() tag.Tag {
-  return tag.NewNumber(4,8)
+  return tag.NewNumber(3,8)
 }
