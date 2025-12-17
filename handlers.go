@@ -239,6 +239,61 @@ func HandleDataPut(w http.ResponseWriter, r *http.Request) {
   return
 }
 
+func HandleDataPatch(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	datatype := vars["datatype"]
+  log.Printf("HandleDataPatch: %s", datatype)
+  ctx := r.Context()
+  userID := ctx.Value("user_id")
+  if userID == nil {
+    log.Printf("could not get userid from context")
+    http.Error(w, "Authorization header required", http.StatusUnauthorized)
+    return
+  }
+  u, err := user.Read(userID.(string))
+  if err != nil {
+    log.Printf("could not read userID from context")
+    http.Error(w, "User Not Found", http.StatusNotFound)
+    return
+  }
+  collection := db.GetCollection(datatype);
+  defer r.Body.Close()
+  bodyBytes, err := io.ReadAll(r.Body)
+  if err != nil {
+    http.Error(w, "Error reading request body", http.StatusInternalServerError)
+    log.Printf("Error reading request body: %v", err)
+    return
+  }
+  log.Printf("user: %s  collection: %v  body: %s",
+             u.Username, collection, string(bodyBytes))
+  data := make(map[string]interface{})
+  err = json.Unmarshal(bodyBytes, &data)
+  if err != nil {
+    http.Error(w, "Error unmarshalling JSON", http.StatusBadRequest)
+    log.Printf("Error unmarshalling JSON: %v", err)
+    return 
+  }
+
+  objID, err := primitive.ObjectIDFromHex(data["_id"].(string))
+  if err != nil {
+    http.Error(w, "Error _id required", http.StatusBadRequest)
+    log.Printf("Error _id required: %v", err)
+    return 
+  }
+  filter := bson.M{"_id": objID, "account": u.ID.Hex()}
+  delete(data, "_id")
+
+  _, err = collection.UpdateOne(context.TODO(), filter, bson.M{"$set": data})
+  if err != nil {
+    http.Error(w, "Error Updating Data", http.StatusBadRequest)
+    log.Printf("Error Updating Data: %v", err)
+    return 
+  }
+
+  log.Printf("Successful Patch")
+  return
+}
+
 func HandleDataPost(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	datatype := vars["datatype"]

@@ -82,6 +82,7 @@ func main() {
   dataRouter.HandleFunc("/{datatype}", HandleDataGet).Methods("GET")
   dataRouter.HandleFunc("/{datatype}", HandleDataPost).Methods("POST")
   dataRouter.HandleFunc("/{datatype}", HandleDataPut).Methods("PUT")
+  dataRouter.HandleFunc("/{datatype}", HandleDataPatch).Methods("PATCH")
   dataRouter.HandleFunc("/{datatype}/{id}", HandleDataDelete).Methods("DELETE")
 
   // Download routes
