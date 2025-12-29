@@ -69,7 +69,9 @@ func ReadOrdered(collection string, account string) ([]bson.D, error) {
 // No Order
 func ReadUnordered(collection string, account string) ([]bson.M, error) {
   dataset := GetCollection(collection)
-  filter := bson.M{"account": bson.M{"$eq": account}}
+
+  accounts := []string{account, "000000000000000000000000"}
+	filter := bson.M{ "account": bson.M{"$in": accounts}}
   cursor, err := dataset.Find(context.Background(), filter)
   if err != nil {
     log.Fatal(err)
