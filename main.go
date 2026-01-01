@@ -2,13 +2,13 @@ package main
 
 import (
   "fmt"
-  "time"
   "log"
   "net/http"
   "os"
+  "path/filepath"
   "strings"
   "sync"
-  "path/filepath"
+  "time"
 
   "github.com/gorilla/mux"
 )
@@ -16,9 +16,10 @@ import (
 var mu sync.Mutex
 var termColors []string
 var colorIndex int
+
 func init() {
   colorIndex = 0
-  termColors = []string {
+  termColors = []string{
     "\033[30m",
     "\033[31m",
     "\033[32m",
@@ -36,13 +37,13 @@ func LoggingMiddleware(next http.Handler) http.Handler {
 
     // @todo: Remove this mutex for production builds.  This forces
     //        a single request to finish before the next starts.
-    //        Nice for debugging since React in development mode 
+    //        Nice for debugging since React in development mode
     ///       fires two useEffect hooks to force strong components.
     mu.Lock()
     defer mu.Unlock()
 
     if colorIndex >= len(termColors) {
-      colorIndex = 0;
+      colorIndex = 0
     }
     print(termColors[colorIndex])
     start := time.Now()
@@ -50,7 +51,7 @@ func LoggingMiddleware(next http.Handler) http.Handler {
     next.ServeHTTP(w, r) // Call the next handler in the chain
     log.Printf("Completed %s %s in %v", r.Method, r.URL.Path, time.Since(start))
     print("\033[0m")
-    colorIndex++;
+    colorIndex++
 
   })
 }
@@ -65,6 +66,12 @@ func main() {
   r.HandleFunc("/api/auth/register", HandleAuthRegister).Methods("POST")
   r.HandleFunc("/api/auth/verify-email", HandleEmailVerification)
   r.HandleFunc("/api/auth/login", HandleLogin)
+  r.HandleFunc("/api/auth/forgot-password", HandleForgotPassword).Methods("PUT")
+
+  // Authorized user routes such as password updates
+  authUserRouter := r.PathPrefix("/api/auth").Subrouter()
+  authUserRouter.Use(AuthMiddleware)
+  authUserRouter.HandleFunc("/change-password", HandleChangePassword).Methods("PUT")
 
   // Handle the webhook setup request
   r.HandleFunc("/chat/message", HandleHubChallenge).
@@ -78,7 +85,7 @@ func main() {
 
   // Data routes
   dataRouter := r.PathPrefix("/api/data").Subrouter()
-  dataRouter.Use(AuthMiddleware) 
+  dataRouter.Use(AuthMiddleware)
   dataRouter.HandleFunc("/{datatype}", HandleDataGet).Methods("GET")
   dataRouter.HandleFunc("/{datatype}", HandleDataPost).Methods("POST")
   dataRouter.HandleFunc("/{datatype}", HandleDataPut).Methods("PUT")
@@ -87,17 +94,17 @@ func main() {
 
   // Download routes
   downloadRouter := r.PathPrefix("/api/download").Subrouter()
-  downloadRouter.Use(AuthMiddleware) 
+  downloadRouter.Use(AuthMiddleware)
   downloadRouter.HandleFunc("/{datatype}", HandleDownload).Methods("GET")
 
   // Upload routes
   uploadRouter := r.PathPrefix("/api/upload").Subrouter()
-  uploadRouter.Use(AuthMiddleware) 
+  uploadRouter.Use(AuthMiddleware)
   uploadRouter.HandleFunc("/{datatype}", HandleUpload).Methods("POST")
 
   // User routes
   userRouter := r.PathPrefix("/api/user").Subrouter()
-  userRouter.Use(AuthMiddleware) 
+  userRouter.Use(AuthMiddleware)
   userRouter.HandleFunc("", HandleGetUser).Methods("GET")
 
   // Serve static files from the "static" directory
@@ -106,7 +113,7 @@ func main() {
   r.HandleFunc("/", func(w http.ResponseWriter, req *http.Request) {
     if req.URL.Path == "/" {
       http.ServeFile(w, req, filepath.Join("./static", "index.html"))
-    	return
+      return
     }
     staticFileServer.ServeHTTP(w, req)
   })

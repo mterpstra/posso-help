@@ -22,8 +22,8 @@ import (
 
 func HandleDownload(w http.ResponseWriter, r *http.Request) {
   log.Printf("HandleDownload()\n")
-	vars := mux.Vars(r)
-	datatype := vars["datatype"]
+  vars := mux.Vars(r)
+  datatype := vars["datatype"]
 
   ctx := r.Context()
   userID := ctx.Value("user_id")
@@ -42,16 +42,16 @@ func HandleDownload(w http.ResponseWriter, r *http.Request) {
 
   data, err := db.ReadOrdered(datatype, user.ID.Hex())
   if err != nil {
-		w.WriteHeader(http.StatusBadRequest) 
-		fmt.Fprintf(w, "%v", err)
-		return 
+    w.WriteHeader(http.StatusBadRequest) 
+    fmt.Fprintf(w, "%v", err)
+    return 
   }
 
   csv, err := ConvertBsonToCsv(data) 
   if err != nil {
-		w.WriteHeader(http.StatusBadRequest) 
-		fmt.Fprintf(w, "%v", err)
-		return 
+    w.WriteHeader(http.StatusBadRequest) 
+    fmt.Fprintf(w, "%v", err)
+    return 
   }
 
   length := strconv.Itoa(len(csv))
@@ -67,8 +67,8 @@ func HandleDownload(w http.ResponseWriter, r *http.Request) {
 func HandleUpload(w http.ResponseWriter, r *http.Request) {
   log.Printf("Handle Upload")
 
-	vars := mux.Vars(r)
-	datatype := vars["datatype"]
+  vars := mux.Vars(r)
+  datatype := vars["datatype"]
   log.Printf("HandleUpload: %s", datatype)
   ctx := r.Context()
   userID := ctx.Value("user_id")
@@ -85,41 +85,41 @@ func HandleUpload(w http.ResponseWriter, r *http.Request) {
   }
 
   // The name "csvfile" should match the 'name' attribute in the HTML form's input tag.
-	file, handler, err := r.FormFile("csvFile")
-	if err != nil {
-		http.Error(w, "Error retrieving the file", http.StatusBadRequest)
-		log.Println(err)
-		return
-	}
-	defer file.Close()
+  file, handler, err := r.FormFile("csvFile")
+  if err != nil {
+    http.Error(w, "Error retrieving the file", http.StatusBadRequest)
+    log.Println(err)
+    return
+  }
+  defer file.Close()
 
-	log.Printf("Uploaded File: %+v\n", handler.Filename)
-	log.Printf("File Size: %+v\n", handler.Size)
-	log.Printf("MIME Header: %+v\n", handler.Header)
+  log.Printf("Uploaded File: %+v\n", handler.Filename)
+  log.Printf("File Size: %+v\n", handler.Size)
+  log.Printf("MIME Header: %+v\n", handler.Header)
 
-	csvReader := csv.NewReader(file)
-	headers, err := csvReader.Read()
-	if err != nil {
-		http.Error(w, "Error reading CSV header", http.StatusInternalServerError)
-		log.Println(err)
-		return
-	}
+  csvReader := csv.NewReader(file)
+  headers, err := csvReader.Read()
+  if err != nil {
+    http.Error(w, "Error reading CSV header", http.StatusInternalServerError)
+    log.Println(err)
+    return
+  }
   fieldCount := len(headers)
-	log.Printf("Field Count: %+v\n", fieldCount)
+  log.Printf("Field Count: %+v\n", fieldCount)
   record := bson.M{"account": u.ID.Hex()}
   collection := db.GetCollection(datatype);
-	for {
-		row, err := csvReader.Read()
-		if err == io.EOF {
-			break 
-		}
-		if err != nil {
-			fmt.Printf("Error reading row: %v\n", err)
-			return
-		}
+  for {
+    row, err := csvReader.Read()
+    if err == io.EOF {
+      break 
+    }
+    if err != nil {
+      fmt.Printf("Error reading row: %v\n", err)
+      return
+    }
 
-		for i, header := range headers {
-			if i < len(row) { // Ensure index is within bounds of the row
+    for i, header := range headers {
+      if i < len(row) { // Ensure index is within bounds of the row
         key := strings.TrimSpace(header)
         value := strings.TrimSpace(row[i])
         record[key] = value
@@ -134,8 +134,8 @@ func HandleUpload(w http.ResponseWriter, r *http.Request) {
 
 
 
-			}
-		}
+      }
+    }
     log.Printf("record: %+v\n", record)
     result, err := collection.InsertOne(context.TODO(), record)
     if err != nil {
@@ -144,13 +144,13 @@ func HandleUpload(w http.ResponseWriter, r *http.Request) {
     }
     log.Printf("result: %+v\n", result)
 
-	}
+  }
 
 }
 
 func HandleDataGet(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	datatype := vars["datatype"]
+  vars := mux.Vars(r)
+  datatype := vars["datatype"]
 
   ctx := r.Context()
   userID := ctx.Value("user_id")
@@ -169,24 +169,24 @@ func HandleDataGet(w http.ResponseWriter, r *http.Request) {
 
   data, err := db.ReadUnordered(datatype, user.ID.Hex())
   if err != nil {
-		w.WriteHeader(http.StatusBadRequest) 
-		fmt.Fprintf(w, "%v", err)
-		return 
+    w.WriteHeader(http.StatusBadRequest) 
+    fmt.Fprintf(w, "%v", err)
+    return 
   }
 
   json, err := json.Marshal(data)
   if err != nil {
-		w.WriteHeader(http.StatusBadRequest) 
-		fmt.Fprintf(w, "%v", err)
-		return 
+    w.WriteHeader(http.StatusBadRequest) 
+    fmt.Fprintf(w, "%v", err)
+    return 
   }
   fmt.Fprint(w, string(json))
   return 
 }
 
 func HandleDataPut(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	datatype := vars["datatype"]
+  vars := mux.Vars(r)
+  datatype := vars["datatype"]
   log.Printf("HandleDataPut: %s", datatype)
   ctx := r.Context()
   userID := ctx.Value("user_id")
@@ -210,7 +210,7 @@ func HandleDataPut(w http.ResponseWriter, r *http.Request) {
     return
   }
   log.Printf("user: %s  collection: %v  body: %s",
-             u.Username, collection, string(bodyBytes))
+  u.Username, collection, string(bodyBytes))
   data := make(map[string]interface{})
   err = json.Unmarshal(bodyBytes, &data)
   if err != nil {
@@ -240,8 +240,8 @@ func HandleDataPut(w http.ResponseWriter, r *http.Request) {
 }
 
 func HandleDataPatch(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	datatype := vars["datatype"]
+  vars := mux.Vars(r)
+  datatype := vars["datatype"]
   log.Printf("HandleDataPatch: %s", datatype)
   ctx := r.Context()
   userID := ctx.Value("user_id")
@@ -265,7 +265,7 @@ func HandleDataPatch(w http.ResponseWriter, r *http.Request) {
     return
   }
   log.Printf("user: %s  collection: %v  body: %s",
-             u.Username, collection, string(bodyBytes))
+  u.Username, collection, string(bodyBytes))
   data := make(map[string]interface{})
   err = json.Unmarshal(bodyBytes, &data)
   if err != nil {
@@ -290,13 +290,31 @@ func HandleDataPatch(w http.ResponseWriter, r *http.Request) {
     return 
   }
 
+
+  // If we updated the user, we want to give a new JWT back as well.
+  if (datatype == "users") {
+    log.Printf("Update to user, generating new JWT");
+    updatedUser, err := user.Read(userID.(string))
+    if err != nil {
+      log.Printf("Error reading user to get new JWT")
+      return
+    }
+
+    jsonData, err := json.Marshal(updatedUser)
+    if err != nil {
+      log.Printf("Error marshaling updated user %+v", err)
+      return
+    }
+    w.Header().Set("X-New-User", string(jsonData))
+  }
+
   log.Printf("Successful Patch")
   return
 }
 
 func HandleDataPost(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	datatype := vars["datatype"]
+  vars := mux.Vars(r)
+  datatype := vars["datatype"]
   // @todo: check valid values for datatype 
   log.Printf("HandleDataPost: %s", datatype)
   ctx := r.Context()
@@ -325,7 +343,7 @@ func HandleDataPost(w http.ResponseWriter, r *http.Request) {
   }
 
   log.Printf("user: %s  collection: %v  body: %s",
-             u.Username, collection, string(bodyBytes))
+  u.Username, collection, string(bodyBytes))
 
   data := make(map[string]interface{})
 
@@ -353,62 +371,62 @@ func HandleDataPost(w http.ResponseWriter, r *http.Request) {
     log.Printf("Error Inserting Data: %v", err)
     return 
   }
-  
+
   return 
 }
 
 func HandleDataDelete(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	datatype := vars["datatype"]
-	id := vars["id"]
+  vars := mux.Vars(r)
+  datatype := vars["datatype"]
+  id := vars["id"]
   collection := db.GetCollection(datatype);
   log.Printf("Deleteing:  datatype: %s, id: %s", datatype, id)
 
 
   objID, err := primitive.ObjectIDFromHex(id)
-	if err != nil {
+  if err != nil {
     http.Error(w, "invalid_id", http.StatusBadRequest)
     log.Printf("invalid id: %s %v", id, err)
     return
-	}
+  }
 
-	filter := bson.M{"_id": objID}
-	deleteResult, err := collection.DeleteOne(context.TODO(), filter)
-	if err != nil {
-		log.Fatal(err)
+  filter := bson.M{"_id": objID}
+  deleteResult, err := collection.DeleteOne(context.TODO(), filter)
+  if err != nil {
+    log.Fatal(err)
     http.Error(w, "error_deleting_id", http.StatusBadRequest)
     log.Printf("Error Deleting ID: %s %v", id, err)
     return
-	}
+  }
   log.Printf("Number of records deleted: %d by filter %v", 
-             deleteResult.DeletedCount, filter)
+  deleteResult.DeletedCount, filter)
   return 
 }
 
 func HandleChatMessage(w http.ResponseWriter, r *http.Request) {
   log.Printf("HandleChatMessage")
   defer r.Body.Close()
-	bodyBytes, err := io.ReadAll(r.Body)
-	if err != nil {
-		http.Error(w, "Error reading request body", http.StatusInternalServerError)
+  bodyBytes, err := io.ReadAll(r.Body)
+  if err != nil {
+    http.Error(w, "Error reading request body", http.StatusInternalServerError)
     log.Printf("could not read body: %v\n", err)
-		return
-	}
-	log.Printf("ChatMessage: %s\n", string(bodyBytes))
+    return
+  }
+  log.Printf("ChatMessage: %s\n", string(bodyBytes))
 
   chatMessage := &chat.ChatMessage{}
-	err = json.Unmarshal(bodyBytes, chatMessage)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+  err = json.Unmarshal(bodyBytes, chatMessage)
+  if err != nil {
+    http.Error(w, err.Error(), http.StatusInternalServerError)
     log.Printf("unmarshal error: %v\n", err)
-		return
-	}
+    return
+  }
 
   err = chat.ProcessEntries(chatMessage.Entries)
   if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+    http.Error(w, err.Error(), http.StatusInternalServerError)
     log.Printf("error processing entries: %v\n", err)
-		return
+    return
   }
 
   log.Printf("success handing chat message")
@@ -423,18 +441,18 @@ func HandleHubChallenge(w http.ResponseWriter, r *http.Request) {
 
   if len(osToken) < 1 {
     http.Error(w, "environment_error", http.StatusBadRequest)
-		return
+    return
   }
 
   if mode != "subscribe" {
     http.Error(w, "invalid_mode", http.StatusBadRequest)
-		return
-	}
+    return
+  }
 
   if token != osToken {
     http.Error(w, "invalid_token", http.StatusBadRequest)
-		return
-	}
+    return
+  }
 
   fmt.Fprint(w, challenge)
 }
