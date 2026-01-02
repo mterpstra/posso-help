@@ -2,6 +2,7 @@ package user
 
 import (
   "context"
+  "log"
   "time"
   "posso-help/internal/db"
   "go.mongodb.org/mongo-driver/bson"
@@ -51,4 +52,14 @@ func (u *User) GetDisplayName() string {
   }
 
   return u.ID.Hex()
+}
+
+func (u *User) Update(field, value string) error {
+  filter := bson.M{"_id": u.ID}
+  data := bson.M{field: value}
+  log.Printf("Updating User %+v  %+v\n", filter, data)
+  _, err := db.GetCollection("users").UpdateOne(
+    context.TODO(), filter, bson.M{"$set": data})
+
+  return err
 }

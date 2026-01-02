@@ -1,4 +1,3 @@
-// auth.go - Authentication system for ZapManejo
 package main
 
 import (
@@ -261,7 +260,7 @@ func HandleAuthRegister(w http.ResponseWriter, r *http.Request) {
 
   // Special testing email domain.
   // @todo: make this an environment variable
-	if strings.Contains(req.Email, "zapmanejo.test") {
+  if strings.Contains(req.Email, "zapmanejo.test") {
     log.Printf("test email detected, skipping sending email registration")
     response := AuthResponse{
       Success: true,
@@ -526,4 +525,83 @@ func HandleGetUser(w http.ResponseWriter, r *http.Request) {
     return 
   }
   fmt.Fprint(w, string(json))
+}
+
+
+func HandleForgotPassword(w http.ResponseWriter, r *http.Request) {
+  var req struct {
+    Email string `json:"email"`
+  }
+
+  if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+    response := AuthResponse{Success: false, Message: err.Error()}
+    json.NewEncoder(w).Encode(response)
+    log.Printf("could not marshal request %v", err)
+    return
+  }
+
+  log.Printf("HandleForgotPassword");
+}
+
+func HandleChangePassword(w http.ResponseWriter, r *http.Request) {
+  var req struct {
+    CurrentPassword string `json:"current_password"`
+    NewPassword string `json:"new_password"`
+  }
+
+  if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+    response := AuthResponse{Success: false, Message: err.Error()}
+    json.NewEncoder(w).Encode(response)
+    log.Printf("could not marshal request %v", err)
+    return
+  }
+
+  ctx := r.Context()
+  userID := ctx.Value("user_id")
+  if userID == nil {
+    log.Printf("could not get userid from context")
+    http.Error(w, "Authorization header required", http.StatusUnauthorized)
+    return
+  }
+
+  user, err := user.Read(userID.(string))
+  if err != nil {
+    log.Printf("could not read userID from context")
+    http.Error(w, "User Not Found", http.StatusNotFound)
+    return
+  }
+
+  log.Printf("Getting user from ID: %v", userID)
+  log.Printf("HandleChangePassword");
+  log.Printf("Current: %s", req.CurrentPassword);
+  log.Printf("New: %s", req.NewPassword);
+
+  reqPass, err := password.GetSalted(req.CurrentPassword)
+  if err != nil {
+    w.WriteHeader(http.StatusBadRequest) 
+    fmt.Fprintf(w, "%v", err)
+    return
+  }
+
+  if user.Password != reqPass {
+    log.Printf("Passed current password does not match currend db password")
+    w.WriteHeader(http.StatusBadRequest) 
+    fmt.Fprintf(w, "%v", "Current password does not match")
+    return
+  }
+
+  newPass, err := password.GetSalted(req.NewPassword)
+  if err != nil {
+    w.WriteHeader(http.StatusBadRequest) 
+    fmt.Fprintf(w, "%v", err)
+    return
+  }
+
+  err = user.Update("password", newPass)
+  if err != nil {
+    http.Error(w, "Error Updating Data", http.StatusBadRequest)
+    log.Printf("Error Updating Data: %v", err)
+    return 
+  }
+
 }
